@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <h1>||DEVICE_TYPE|| ||DEVICE_VERSION||</h1>
+    <form action="/postconfig" method="post">
+        <table>
+            <tr>
+                <td width="200">Password</td>
+                <td><input type="password" name="password" value=""></td>
+            </tr>
+
+            <tr>
+                <td>MQTT Broker</td>
+                <td><input type="text" name="mqtt_server" value="||MQTT_SERVER||"> </td>
+            </tr>
+            <tr>
+                <td>Room</td>
+                <td><input type="text" name="room" value="||ROOM||"> </td>
+            </tr>
+            <tr>
+                <td>Device Tag</td>
+                <td><input type="text" name="device_tag" value="||DEVICE_TAG||"></td>
+            </tr>
+            <tr>
+                <td>OTA enabled</td>
+                <td><input type="checkbox" name="ota_enabled" value="true" ||OTA_ENABLED||></td>
+            </tr>            
+        </table>
+        <br>
+        <input type="submit" value="Submit">
+    </form>
+
+</body>
+
+</html>
