@@ -1,5 +1,11 @@
+#include "HixConfig.h"
+#include "HixDisplay.h"
+#include "HixMQTT.h"
+#include "HixWebServer.h"
+#include "secret.h"
 #include <Adafruit_NeoPixel.h>
 #include <Arduino.h>
+#include <ArduinoOTA.h>
 #include <DS18B20Temperature.h>
 #include <HixPinDigitalOutput.h>
 #include <HixTimeout.h>
@@ -12,16 +18,34 @@
 #include <SoftwareSerial.h>
 #include <ir_Samsung.h>
 
-// runtime global variables
-HixTimeout          g_sampler(3000, true);
+//connected devices and software modules
+HixConfig           g_config;
+HixTimeout          g_sampler(1000, true);
+HixTimeout          g_logger(5000, true);
+HixDisplay          g_display;
 HixPinDigitalOutput g_beeper(2);
 DS18B20Temperature  g_temperature(14);
 Adafruit_NeoPixel   g_rgbLed = Adafruit_NeoPixel(1, 0, NEO_RGB + NEO_KHZ400);
 MHZ19               g_mhz19;
 SoftwareSerial      g_mhz19Serial(13, 16);
+HixWebServer        g_webServer(g_config);
 IRSamsungAc         g_IRTransmitter(15);
 IRrecv              g_IRReciever(12, 1024, 40, true);
-bool                g_bACIsOn = false;
+
+//global variables
+float g_fCurrentTemp = 0;
+int   g_nCurrentCO2  = 0;
+int   g_nCurrentRSSI = 0;
+bool  g_bLoopToggle  = false;
+bool  g_bACIsOn      = false;
+
+HixMQTT g_mqtt(Secret::WIFI_SSID,
+               Secret::WIFI_PWD,
+               g_config.getMQTTServer(),
+               g_config.getDeviceType(),
+               g_config.getDeviceVersion(),
+               g_config.getRoom(),
+               g_config.getDeviceTag());
 
 //////////////////////////////////////////////////////////////////////////////////
 // Helper functions
@@ -31,6 +55,37 @@ void resetWithMessage(const char * szMessage) {
     Serial.println(szMessage);
     delay(2000);
     ESP.reset();
+}
+
+void configureOTA() {
+    Serial.println("Configuring OTA, my hostname:");
+    Serial.println(g_mqtt.getMqttClientName());
+    ArduinoOTA.setHostname(g_mqtt.getMqttClientName());
+    ArduinoOTA.setPort(8266);
+    //setup handlers
+    ArduinoOTA.onStart([]() {
+        Serial.println("OTA -> Start");
+    });
+    ArduinoOTA.onEnd([]() {
+        Serial.println("OTA -> End");
+    });
+    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+        Serial.printf("OTA -> Progress: %u%%\r", (progress / (total / 100)));
+    });
+    ArduinoOTA.onError([](ota_error_t error) {
+        Serial.printf("OTA -> Error[%u]: ", error);
+        if (error == OTA_AUTH_ERROR)
+            Serial.println("OTA -> Auth Failed");
+        else if (error == OTA_BEGIN_ERROR)
+            Serial.println("OTA -> Begin Failed");
+        else if (error == OTA_CONNECT_ERROR)
+            Serial.println("OTA -> Connect Failed");
+        else if (error == OTA_RECEIVE_ERROR)
+            Serial.println("OTA -> Receive Failed");
+        else if (error == OTA_END_ERROR)
+            Serial.println("OTA -> End Failed");
+    });
+    ArduinoOTA.begin();
 }
 
 void setLedColor(uint32_t color) {
@@ -124,7 +179,18 @@ bool checkIR(void) {
 
 void setup() {
     Serial.begin(115200);
-    Serial.println(F("Startup "));
+    Serial.print(F("Startup "));
+    Serial.print(g_config.getDeviceType());
+    Serial.print(F(" "));
+    Serial.println(g_config.getDeviceVersion());
+    //disconnect WiFi -> seams to help for bug that after upload wifi does not want to connect again...
+    Serial.println(F("Disconnecting WIFI"));
+    WiFi.disconnect();
+    // setup display
+    Serial.println(F("Setting up display"));
+    if (!g_display.begin()) resetWithMessage("SSD1306 allocation failed, resetting");
+    g_display.drawDisplayVersion(g_config.getDeviceType(), g_config.getDeviceVersion());
+    delay(2000);
     //setup beeper
     Serial.println(F("Setup beeper"));
     g_beeper.begin();
@@ -156,6 +222,15 @@ void setup() {
     Serial.println("Setting up IR Receiver");
     g_IRReciever.setUnknownThreshold(12);
     g_IRReciever.enableIRIn();
+   // configure MQTT
+    Serial.println(F("Setting up MQTT"));
+    if (!g_mqtt.begin()) resetWithMessage("MQTT allocation failed, resetting");
+    //setup SPIFFS
+    Serial.println(F("Setting up SPIFFS"));
+    if (!SPIFFS.begin()) resetWithMessage("SPIFFS initialization failed, resetting");
+    //setup the server
+    Serial.println(F("Setting up web server"));
+    g_webServer.begin();    
     //all done
     g_beeper.blink(true, 5, 100);
     Serial.println(F("Setup complete"));
@@ -166,11 +241,45 @@ void setup() {
 //////////////////////////////////////////////////////////////////////////////////
 
 void loop() {
-    if (g_sampler.isExpired(true)) {
-        Serial.print(g_temperature.getTemp());
-        Serial.print("\t");
-        Serial.println(g_mhz19.getCO2());
-        AC_toggle(23);
-    }
+    //other loop functions
+    g_mqtt.loop();
+    g_webServer.handleClient();
+    ArduinoOTA.handle();
     checkIR();
+    //my own processing
+    if (g_sampler.isExpired(true)) {
+        g_bLoopToggle = !g_bLoopToggle;
+        // load sensor values
+        g_fCurrentTemp = g_temperature.getTemp();
+        g_nCurrentCO2  = g_mhz19.getCO2();
+        g_nCurrentRSSI = WiFi.RSSI();
+        g_display.showStatus(g_fCurrentTemp,
+                             g_nCurrentCO2,
+                             g_nCurrentRSSI,
+                             g_bLoopToggle);
+        // log to serial
+        Serial.print(g_fCurrentTemp);
+        Serial.print(F(" C ; "));
+        Serial.print(g_nCurrentCO2);
+        Serial.print(F(" PPM"));
+        Serial.println();
+    }
+    if (g_logger.isExpired(true)) {
+        g_mqtt.publishStatusValues(g_nCurrentCO2, g_fCurrentTemp);
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// Required by the MQTT library
+//////////////////////////////////////////////////////////////////////////////////
+
+void onConnectionEstablished() {
+    //setup OTA
+    if (g_config.getOTAEnabled()) {
+        configureOTA();
+    } else {
+        Serial.println("OTA is disabled");
+    }
+    //plushing values
+    g_mqtt.publishDeviceValues();
 }
