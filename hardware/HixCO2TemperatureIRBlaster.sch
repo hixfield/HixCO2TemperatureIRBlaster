@@ -630,7 +630,7 @@ grid 5.08 mm</description>
 <packageinstance name="XH4P"/>
 </packageinstances>
 </package3d>
-<package3d name="MHZ-19_CO2" urn="urn:adsk.eagle:package:17734911/3" type="model" library_version="9" library_locally_modified="yes">
+<package3d name="MHZ-19_CO2" urn="urn:adsk.eagle:package:17734911/4" type="model" library_version="25" library_locally_modified="yes">
 <packageinstances>
 <packageinstance name="MHZ-19_CO2"/>
 </packageinstances>
@@ -1268,7 +1268,7 @@ Wickmann</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="MHZ-19_CO2" urn="urn:adsk.eagle:component:17734912/4" library_version="9" library_locally_modified="yes">
+<deviceset name="MHZ-19_CO2" urn="urn:adsk.eagle:component:17734912/4" locally_modified="yes" library_version="25" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="MHZ-19_CO2" x="60.96" y="-17.78"/>
 </gates>
@@ -1286,7 +1286,7 @@ Wickmann</description>
 <connect gate="G$1" pin="VO" pad="VO"/>
 </connects>
 <package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:17734911/3"/>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:17734911/4"/>
 </package3dinstances>
 <technologies>
 <technology name=""/>
@@ -18403,7 +18403,7 @@ DIN A4, landscape with location and doc. field</description>
 <part name="GND8" library="supply1" deviceset="GND" device=""/>
 <part name="R8" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R1206" package3d_urn="urn:adsk.eagle:package:23540/2" value="100"/>
 <part name="C4" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C1206" package3d_urn="urn:adsk.eagle:package:23618/2" value="4.7μF"/>
-<part name="U$1" library="0_HixField" library_urn="urn:adsk.eagle:library:13392178" deviceset="MHZ-19_CO2" device="" package3d_urn="urn:adsk.eagle:package:17734911/3"/>
+<part name="U$1" library="0_HixField" library_urn="urn:adsk.eagle:library:13392178" deviceset="MHZ-19_CO2" device="" package3d_urn="urn:adsk.eagle:package:17734911/4"/>
 <part name="SUPPLY12" library="0_HixField" library_urn="urn:adsk.eagle:library:13392178" deviceset="3.3V" device=""/>
 <part name="U$2" library="0_HixField" library_urn="urn:adsk.eagle:library:13392178" deviceset="ESP8266(ESP12E)V2" device="" package3d_urn="urn:adsk.eagle:package:12836033/3"/>
 <part name="GND11" library="supply1" deviceset="GND" device=""/>

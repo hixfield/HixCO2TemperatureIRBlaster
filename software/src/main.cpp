@@ -47,6 +47,13 @@ HixMQTT g_mqtt(Secret::WIFI_SSID,
                g_config.getRoom(),
                g_config.getDeviceTag());
 
+enum Color : uint32_t {
+    red    = 0xFF0000,
+    green  = 0x00FF00,
+    blue   = 0x0000FF,
+    orange = 0xFF8C00
+};
+
 //////////////////////////////////////////////////////////////////////////////////
 // Helper functions
 //////////////////////////////////////////////////////////////////////////////////
@@ -88,9 +95,21 @@ void configureOTA() {
     ArduinoOTA.begin();
 }
 
-void setLedColor(uint32_t color) {
+void setLedColor(Color color) {
     g_rgbLed.setPixelColor(0, color);
     g_rgbLed.show();
+}
+
+void setLedColorForCO2(int nCO2ppm) {
+    if (nCO2ppm < 600) {
+        setLedColor(Color::green);
+        return;
+    }
+    if (nCO2ppm < 1200) {
+        setLedColor(Color::orange);
+        return;
+    }
+    setLedColor(Color::red);
 }
 
 void printACState() {
@@ -202,13 +221,13 @@ void setup() {
     //setup RGB let
     Serial.println(F("Setup RDB LED"));
     g_rgbLed.begin();
-    setLedColor(0xFF0000);
     delay(300);
-    setLedColor(0x00FF00);
+    setLedColor(Color::green);
+    setLedColor(Color::red);
     delay(300);
-    setLedColor(0x0000FF);
+    setLedColor(Color::orange);
     delay(300);
-    setLedColor(0x000000);
+    setLedColor(Color::blue);
     // setup CO2 sensor
     Serial.println(F("Setting up CO2 sensor"));
     g_mhz19Serial.begin(9600);
@@ -222,7 +241,7 @@ void setup() {
     Serial.println("Setting up IR Receiver");
     g_IRReciever.setUnknownThreshold(12);
     g_IRReciever.enableIRIn();
-   // configure MQTT
+    // configure MQTT
     Serial.println(F("Setting up MQTT"));
     if (!g_mqtt.begin()) resetWithMessage("MQTT allocation failed, resetting");
     //setup SPIFFS
@@ -230,7 +249,7 @@ void setup() {
     if (!SPIFFS.begin()) resetWithMessage("SPIFFS initialization failed, resetting");
     //setup the server
     Serial.println(F("Setting up web server"));
-    g_webServer.begin();    
+    g_webServer.begin();
     //all done
     g_beeper.blink(true, 5, 100);
     Serial.println(F("Setup complete"));
@@ -253,6 +272,13 @@ void loop() {
         g_fCurrentTemp = g_temperature.getTemp();
         g_nCurrentCO2  = g_mhz19.getCO2();
         g_nCurrentRSSI = WiFi.RSSI();
+        //set let
+        if (g_mqtt.isConnected()) {
+            setLedColorForCO2(g_nCurrentCO2);
+        } else {
+            setLedColor(Color::blue);
+        }
+        //show on display
         g_display.showStatus(g_fCurrentTemp,
                              g_nCurrentCO2,
                              g_nCurrentRSSI,
@@ -267,6 +293,7 @@ void loop() {
     if (g_logger.isExpired(true)) {
         g_mqtt.publishStatusValues(g_nCurrentCO2, g_fCurrentTemp);
     }
+        AC_On(22);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
