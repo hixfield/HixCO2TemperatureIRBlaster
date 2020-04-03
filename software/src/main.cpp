@@ -293,7 +293,6 @@ void loop() {
     if (g_logger.isExpired(true)) {
         g_mqtt.publishStatusValues(g_nCurrentCO2, g_fCurrentTemp);
     }
-        AC_On(22);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
