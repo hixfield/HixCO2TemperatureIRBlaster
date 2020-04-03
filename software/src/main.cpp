@@ -1,128 +1,25 @@
-#include "HixConfig.h"
-#include "HixDisplay.h"
-#include "HixMQTT.h"
-#include "HixWebServer.h"
-#include "secret.h"
-#include <Adafruit_NeoPixel.h>
 #include <Arduino.h>
-#include <ArduinoOTA.h>
-#include <DS18B20Temperature.h>
 #include <HixPinDigitalOutput.h>
-#include <HixTimeout.h>
 #include <IRac.h>
 #include <IRrecv.h>
 #include <IRremoteESP8266.h>
 #include <IRtext.h>
 #include <IRutils.h>
 #include <MHZ19.h>
-#include <SoftwareSerial.h>
 #include <ir_Samsung.h>
 
+
 //connected devices and software modules
-HixConfig           g_config;
-HixTimeout          g_sampler(1000, true);
-HixTimeout          g_logger(5000, true);
-HixDisplay          g_display;
 HixPinDigitalOutput g_beeper(2);
-DS18B20Temperature  g_temperature(14);
-Adafruit_NeoPixel   g_rgbLed = Adafruit_NeoPixel(1, 0, NEO_RGB + NEO_KHZ400);
-MHZ19               g_mhz19;
-SoftwareSerial      g_mhz19Serial(13, 16);
-HixWebServer        g_webServer(g_config);
+//HixPinDigitalOutput g_ir(15);
 IRSamsungAc         g_IRTransmitter(15);
-IRrecv              g_IRReciever(12, 1024, 40, true);
 
-//global variables
-float g_fCurrentTemp = 0;
-int   g_nCurrentCO2  = 0;
-int   g_nCurrentRSSI = 0;
-bool  g_bLoopToggle  = false;
-bool  g_bACIsOn      = false;
 
-HixMQTT g_mqtt(Secret::WIFI_SSID,
-               Secret::WIFI_PWD,
-               g_config.getMQTTServer(),
-               g_config.getDeviceType(),
-               g_config.getDeviceVersion(),
-               g_config.getRoom(),
-               g_config.getDeviceTag());
-
-enum Color : uint32_t {
-    red    = 0xFF0000,
-    green  = 0x00FF00,
-    blue   = 0x0000FF,
-    orange = 0xFF8C00
-};
-
-//////////////////////////////////////////////////////////////////////////////////
-// Helper functions
-//////////////////////////////////////////////////////////////////////////////////
-
-void resetWithMessage(const char * szMessage) {
-    Serial.println(szMessage);
-    delay(2000);
-    ESP.reset();
-}
-
-void configureOTA() {
-    Serial.println("Configuring OTA, my hostname:");
-    Serial.println(g_mqtt.getMqttClientName());
-    ArduinoOTA.setHostname(g_mqtt.getMqttClientName());
-    ArduinoOTA.setPort(8266);
-    //setup handlers
-    ArduinoOTA.onStart([]() {
-        Serial.println("OTA -> Start");
-    });
-    ArduinoOTA.onEnd([]() {
-        Serial.println("OTA -> End");
-    });
-    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-        Serial.printf("OTA -> Progress: %u%%\r", (progress / (total / 100)));
-    });
-    ArduinoOTA.onError([](ota_error_t error) {
-        Serial.printf("OTA -> Error[%u]: ", error);
-        if (error == OTA_AUTH_ERROR)
-            Serial.println("OTA -> Auth Failed");
-        else if (error == OTA_BEGIN_ERROR)
-            Serial.println("OTA -> Begin Failed");
-        else if (error == OTA_CONNECT_ERROR)
-            Serial.println("OTA -> Connect Failed");
-        else if (error == OTA_RECEIVE_ERROR)
-            Serial.println("OTA -> Receive Failed");
-        else if (error == OTA_END_ERROR)
-            Serial.println("OTA -> End Failed");
-    });
-    ArduinoOTA.begin();
-}
-
-void setLedColor(Color color) {
-    g_rgbLed.setPixelColor(0, color);
-    g_rgbLed.show();
-}
-
-void setLedColorForCO2(int nCO2ppm) {
-    if (nCO2ppm < 600) {
-        setLedColor(Color::green);
-        return;
-    }
-    if (nCO2ppm < 1200) {
-        setLedColor(Color::orange);
-        return;
-    }
-    setLedColor(Color::red);
-}
-
-void printACState() {
-    Serial.println("Samsung A/C remote is in the following state:");
-    Serial.printf("  %s\n", g_IRTransmitter.toString().c_str());
-}
 
 void AC_On(int nTemperature) {
     Serial.print("AC ON to ");
     Serial.print(nTemperature);
     Serial.println(" C");
-    //to avoid detecting our own transmitted signal, switch off detector first
-    g_IRReciever.disableIRIn();
     //transmit our commands
     g_IRTransmitter.on();
     g_IRTransmitter.setFan(kSamsungAcFanAuto);
@@ -130,65 +27,6 @@ void AC_On(int nTemperature) {
     g_IRTransmitter.setTemp(nTemperature);
     g_IRTransmitter.setSwing(true);
     g_IRTransmitter.send();
-    //re-enable our IR detector
-    g_IRReciever.enableIRIn();
-    //keep our state
-    g_bACIsOn = true;
-}
-
-
-void AC_Off(void) {
-    Serial.print("AC OFF");
-    //to avoid detecting our own transmitted signal, switch off detector first
-    g_IRReciever.disableIRIn();
-    //transmit our commands
-    g_IRTransmitter.off();
-    g_IRTransmitter.send();
-    //re-enable our IR detector
-    g_IRReciever.enableIRIn();
-    //keep our state
-    g_bACIsOn = false;
-}
-
-void AC_toggle(int nTemperature) {
-    if (g_bACIsOn)
-        AC_Off();
-    else
-        AC_On(nTemperature);
-}
-
-bool handleIRCommand(decode_results results) {
-    switch (results.value) {
-        //Telenet IR : play button
-    case 0x48C6EAFF:
-        AC_On(28);
-        return true;
-        //Telenet IR : pause button
-    case 0xAA33049:
-        AC_Off();
-        return true;
-    default:
-        Serial.print("Unrecognized code received ");
-        Serial.println(resultToHexidecimal(&results));
-    }
-    //nothing handled
-    return false;
-}
-
-bool checkIR(void) {
-    decode_results results;
-    // Check if the IR code has been received.
-    if (g_IRReciever.decode(&results)) {
-        // Check if we got an IR message that was to big for our capture buffer.
-        if (results.overflow) Serial.println("Error IR capture buffer overflow");
-        // Display the basic output of what we found.
-        Serial.print("IR Received: ");
-        Serial.println(resultToHexidecimal(&results));
-        //did find something!
-        return handleIRCommand(results);
-    }
-    //return not found
-    return false;
 }
 
 
@@ -199,57 +37,13 @@ bool checkIR(void) {
 void setup() {
     Serial.begin(115200);
     Serial.print(F("Startup "));
-    Serial.print(g_config.getDeviceType());
-    Serial.print(F(" "));
-    Serial.println(g_config.getDeviceVersion());
-    //disconnect WiFi -> seams to help for bug that after upload wifi does not want to connect again...
-    Serial.println(F("Disconnecting WIFI"));
-    WiFi.disconnect();
-    // setup display
-    Serial.println(F("Setting up display"));
-    if (!g_display.begin()) resetWithMessage("SSD1306 allocation failed, resetting");
-    g_display.drawDisplayVersion(g_config.getDeviceType(), g_config.getDeviceVersion());
-    delay(2000);
-    //setup beeper
+   //setup beeper
     Serial.println(F("Setup beeper"));
-    g_beeper.begin();
-    //setup DS18B20
-    Serial.println(F("Setup DS18B20"));
-    if (!g_temperature.begin()) {
-        resetWithMessage("Could not locate DS18B20");
-    }
-    //setup RGB let
-    Serial.println(F("Setup RDB LED"));
-    g_rgbLed.begin();
-    delay(300);
-    setLedColor(Color::green);
-    setLedColor(Color::red);
-    delay(300);
-    setLedColor(Color::orange);
-    delay(300);
-    setLedColor(Color::blue);
-    // setup CO2 sensor
-    Serial.println(F("Setting up CO2 sensor"));
-    g_mhz19Serial.begin(9600);
-    g_mhz19.begin(g_mhz19Serial);
-    g_mhz19.setRange(5000);
-    g_mhz19.autoCalibration();
+    g_beeper.begin();    
     //configure ir transmitter
     Serial.println("Setting up IR Transmitter");
+    //g_ir.begin();
     g_IRTransmitter.begin();
-    //configure receiver
-    Serial.println("Setting up IR Receiver");
-    g_IRReciever.setUnknownThreshold(12);
-    g_IRReciever.enableIRIn();
-    // configure MQTT
-    Serial.println(F("Setting up MQTT"));
-    if (!g_mqtt.begin()) resetWithMessage("MQTT allocation failed, resetting");
-    //setup SPIFFS
-    Serial.println(F("Setting up SPIFFS"));
-    if (!SPIFFS.begin()) resetWithMessage("SPIFFS initialization failed, resetting");
-    //setup the server
-    Serial.println(F("Setting up web server"));
-    g_webServer.begin();
     //all done
     g_beeper.blink(true, 5, 100);
     Serial.println(F("Setup complete"));
@@ -260,53 +54,7 @@ void setup() {
 //////////////////////////////////////////////////////////////////////////////////
 
 void loop() {
-    //other loop functions
-    g_mqtt.loop();
-    g_webServer.handleClient();
-    ArduinoOTA.handle();
-    checkIR();
-    //my own processing
-    if (g_sampler.isExpired(true)) {
-        g_bLoopToggle = !g_bLoopToggle;
-        // load sensor values
-        g_fCurrentTemp = g_temperature.getTemp();
-        g_nCurrentCO2  = g_mhz19.getCO2();
-        g_nCurrentRSSI = WiFi.RSSI();
-        //set let
-        if (g_mqtt.isConnected()) {
-            setLedColorForCO2(g_nCurrentCO2);
-        } else {
-            setLedColor(Color::blue);
-        }
-        //show on display
-        g_display.showStatus(g_fCurrentTemp,
-                             g_nCurrentCO2,
-                             g_nCurrentRSSI,
-                             g_bLoopToggle);
-        // log to serial
-        Serial.print(g_fCurrentTemp);
-        Serial.print(F(" C ; "));
-        Serial.print(g_nCurrentCO2);
-        Serial.print(F(" PPM"));
-        Serial.println();
-    }
-    if (g_logger.isExpired(true)) {
-        g_mqtt.publishStatusValues(g_nCurrentCO2, g_fCurrentTemp);
-    }
-        AC_On(22);
-}
-
-//////////////////////////////////////////////////////////////////////////////////
-// Required by the MQTT library
-//////////////////////////////////////////////////////////////////////////////////
-
-void onConnectionEstablished() {
-    //setup OTA
-    if (g_config.getOTAEnabled()) {
-        configureOTA();
-    } else {
-        Serial.println("OTA is disabled");
-    }
-    //plushing values
-    g_mqtt.publishDeviceValues();
+    //g_ir.blink(true,4,1);
+    AC_On(23);
+    g_beeper.blink(true,4,1);    
 }
