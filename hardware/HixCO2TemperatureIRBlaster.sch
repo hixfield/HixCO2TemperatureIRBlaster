@@ -563,10 +563,10 @@ grid 5.08 mm</description>
 <text x="0" y="2.54" size="1.27" layer="25" align="center">&gt;NAME</text>
 <text x="0" y="-2.54" size="1.27" layer="27" align="center">&gt;VALUE</text>
 </package>
-<package name="TSOP2238" urn="urn:adsk.eagle:footprint:17848655/3" library_version="21">
+<package name="TSOP2238" urn="urn:adsk.eagle:footprint:17848655/4" library_version="26">
 <pad name="OUT" x="-5.08" y="-2.54" drill="0.85" shape="octagon"/>
 <pad name="VCC" x="-2.54" y="-2.54" drill="0.85" shape="octagon"/>
-<pad name="GND" x="0" y="-2.54" drill="0.6" shape="octagon"/>
+<pad name="GND" x="0" y="-2.54" drill="0.85" shape="octagon"/>
 <wire x1="-5.715" y1="-2.54" x2="0.635" y2="-2.54" width="0.127" layer="21"/>
 <wire x1="-5.715" y1="-2.54" x2="-5.334" y2="-1.27" width="0.127" layer="21"/>
 <wire x1="-5.334" y1="-1.27" x2="0.254" y2="-1.27" width="0.127" layer="21"/>
@@ -725,7 +725,7 @@ grid 5.08 mm</description>
 <packageinstance name="BUZZER(12MM)"/>
 </packageinstances>
 </package3d>
-<package3d name="TSOP2238" urn="urn:adsk.eagle:package:17848656/4" type="model" library_version="21">
+<package3d name="TSOP2238" urn="urn:adsk.eagle:package:17848656/5" type="model" library_version="26">
 <packageinstances>
 <packageinstance name="TSOP2238"/>
 </packageinstances>
@@ -838,7 +838,7 @@ Wickmann</description>
 <wire x1="2.794" y1="-1.016" x2="-2.286" y2="1.524" width="0.254" layer="94" curve="-180"/>
 <wire x1="5.334" y1="1.524" x2="2.794" y2="-1.016" width="0.254" layer="94" curve="-180"/>
 </symbol>
-<symbol name="ESP8266(ESP12E)V2" urn="urn:adsk.eagle:symbol:17744675/1" library_version="8">
+<symbol name="ESP8266(ESP12E)V2" urn="urn:adsk.eagle:symbol:17744675/2" library_version="26">
 <description>ESP8266-12E Module</description>
 <pin name="RST" x="-17.78" y="20.32" visible="pin" length="short" direction="in" function="dot"/>
 <pin name="ADC0" x="-17.78" y="17.78" visible="pin" length="short" direction="in"/>
@@ -864,6 +864,7 @@ Wickmann</description>
 <pin name="GPIO6_SDCLK" x="12.7" y="-20.32" visible="pin" length="short" direction="nc" rot="R90"/>
 <text x="-10.16" y="38.1" size="1.778" layer="95" rot="R180" align="center-right">&gt;Name</text>
 <text x="22.86" y="38.1" size="1.778" layer="96" align="center-right">&gt;Value</text>
+<text x="23.622" y="31.496" size="1.27" layer="94">3.3V</text>
 <wire x1="-15.24" y1="35.56" x2="-15.24" y2="-17.78" width="0.254" layer="94"/>
 <wire x1="-15.24" y1="-17.78" x2="27.94" y2="-17.78" width="0.254" layer="94"/>
 <wire x1="27.94" y1="-17.78" x2="27.94" y2="35.56" width="0.254" layer="94"/>
@@ -883,13 +884,9 @@ Wickmann</description>
 <wire x1="13.97" y1="30.48" x2="13.97" y2="33.02" width="0.254" layer="94"/>
 <wire x1="20.32" y1="27.94" x2="20.32" y2="26.67" width="0.1016" layer="94"/>
 <wire x1="20.32" y1="26.67" x2="20.32" y2="25.4" width="0.1016" layer="94"/>
-<wire x1="20.32" y1="25.4" x2="22.86" y2="26.67" width="0.1016" layer="94"/>
-<wire x1="22.86" y1="26.67" x2="20.32" y2="27.94" width="0.1016" layer="94"/>
 <wire x1="22.86" y1="27.94" x2="22.86" y2="26.67" width="0.1016" layer="94"/>
 <wire x1="22.86" y1="26.67" x2="22.86" y2="25.4" width="0.1016" layer="94"/>
 <wire x1="22.86" y1="26.67" x2="25.4" y2="26.67" width="0.1016" layer="94"/>
-<wire x1="25.4" y1="26.67" x2="25.4" y2="24.384" width="0.1016" layer="94"/>
-<wire x1="24.13" y1="24.384" x2="26.67" y2="24.384" width="0.254" layer="94"/>
 <wire x1="20.32" y1="26.67" x2="18.796" y2="26.67" width="0.1016" layer="94"/>
 <wire x1="18.796" y1="27.432" x2="18.796" y2="25.908" width="0.1016" layer="94"/>
 <wire x1="18.796" y1="25.908" x2="14.986" y2="25.908" width="0.1016" layer="94"/>
@@ -903,6 +900,9 @@ Wickmann</description>
 <wire x1="21.336" y1="29.464" x2="21.082" y2="28.702" width="0.1016" layer="94"/>
 <wire x1="22.352" y1="28.956" x2="21.844" y2="28.448" width="0.1016" layer="94"/>
 <wire x1="22.86" y1="29.464" x2="22.606" y2="28.702" width="0.1016" layer="94"/>
+<wire x1="25.4" y1="26.67" x2="25.4" y2="29.972" width="0.1016" layer="94"/>
+<wire x1="22.86" y1="27.94" x2="20.32" y2="26.67" width="0.1016" layer="94"/>
+<wire x1="20.32" y1="26.67" x2="22.86" y2="25.4" width="0.1016" layer="94"/>
 <polygon width="0.1016" layer="94">
 <vertex x="20.574" y="29.21"/>
 <vertex x="21.082" y="28.702"/>
@@ -913,6 +913,7 @@ Wickmann</description>
 <vertex x="22.606" y="28.702"/>
 <vertex x="22.86" y="29.464"/>
 </polygon>
+<circle x="25.4" y="30.48" radius="0.508" width="0.1016" layer="94"/>
 </symbol>
 <symbol name="HLK-PM01" urn="urn:adsk.eagle:symbol:12835960/1" library_version="8" library_locally_modified="yes">
 <wire x1="-10.16" y1="-7.62" x2="-10.16" y2="7.62" width="0.254" layer="94"/>
@@ -1268,7 +1269,7 @@ Wickmann</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="MHZ-19_CO2" urn="urn:adsk.eagle:component:17734912/4" locally_modified="yes" library_version="25" library_locally_modified="yes">
+<deviceset name="MHZ-19_CO2" urn="urn:adsk.eagle:component:17734912/5" library_version="26">
 <gates>
 <gate name="G$1" symbol="MHZ-19_CO2" x="60.96" y="-17.78"/>
 </gates>
@@ -1294,7 +1295,7 @@ Wickmann</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="ESP8266(ESP12E)V2" urn="urn:adsk.eagle:component:17744676/2" library_version="8">
+<deviceset name="ESP8266(ESP12E)V2" urn="urn:adsk.eagle:component:17744676/3" library_version="26">
 <gates>
 <gate name="G$1" symbol="ESP8266(ESP12E)V2" x="-7.62" y="-7.62"/>
 </gates>
@@ -1547,7 +1548,7 @@ Wickmann</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="TSOP2238" urn="urn:adsk.eagle:component:17848657/4" prefix="U" uservalue="yes" library_version="22" library_locally_modified="yes">
+<deviceset name="TSOP2238" urn="urn:adsk.eagle:component:17848657/5" prefix="U" uservalue="yes" library_version="26">
 <description>TSOP2238</description>
 <gates>
 <gate name="G$1" symbol="TSOP2238" x="5.08" y="-5.08"/>
@@ -1555,12 +1556,12 @@ Wickmann</description>
 <devices>
 <device name="" package="TSOP2238">
 <connects>
-<connect gate="G$1" pin="GND" pad="VCC"/>
+<connect gate="G$1" pin="GND" pad="GND"/>
 <connect gate="G$1" pin="OUT" pad="OUT"/>
-<connect gate="G$1" pin="VCC" pad="GND"/>
+<connect gate="G$1" pin="VCC" pad="VCC"/>
 </connects>
 <package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:17848656/4"/>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:17848656/5"/>
 </package3dinstances>
 <technologies>
 <technology name=""/>
@@ -18438,7 +18439,7 @@ DIN A4, landscape with location and doc. field</description>
 <part name="GND2" library="supply1" deviceset="GND" device=""/>
 <part name="GND5" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="SUPPLY4" library="0_HixField" library_urn="urn:adsk.eagle:library:13392178" deviceset="3.3V" device=""/>
-<part name="U1" library="0_HixField" library_urn="urn:adsk.eagle:library:13392178" deviceset="TSOP2238" device="" package3d_urn="urn:adsk.eagle:package:17848656/4" value="TSOP2238"/>
+<part name="U1" library="0_HixField" library_urn="urn:adsk.eagle:library:13392178" deviceset="TSOP2238" device="" package3d_urn="urn:adsk.eagle:package:17848656/5" value="TSOP2238"/>
 <part name="U$3" library="0_HixField" library_urn="urn:adsk.eagle:library:13392178" deviceset="LED_RGB" device="" package3d_urn="urn:adsk.eagle:package:17854569/4"/>
 <part name="GND9" library="supply1" deviceset="GND" device=""/>
 <part name="SUPPLY5" library="0_HixField" library_urn="urn:adsk.eagle:library:13392178" deviceset="5.0V" device=""/>
@@ -18583,7 +18584,7 @@ DIN A4, landscape with location and doc. field</description>
 <attribute name="VALUE" x="185.42" y="113.411" size="1.778" layer="96" align="center"/>
 </instance>
 <instance part="FRAME1" gate="G$1" x="-10.16" y="-45.72" smashed="yes">
-<attribute name="DRAWING_NAME" x="207.01" y="-30.48" size="2.54" layer="94"/>
+<attribute name="DRAWING_NAME" x="207.01" y="-30.48" size="1.905" layer="94"/>
 <attribute name="LAST_DATE_TIME" x="207.01" y="-35.56" size="2.286" layer="94"/>
 <attribute name="SHEET" x="220.345" y="-40.64" size="2.54" layer="94"/>
 </instance>
