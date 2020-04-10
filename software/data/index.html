@@ -9,7 +9,10 @@
                 <td width="200">Password</td>
                 <td><input type="password" name="password" value=""></td>
             </tr>
-
+            <tr>
+                <td>Number of boot cycles</td>
+                <td><input type="number" name="nbr_bootups" value="||NBR_BOOTUPS||"> </td>
+            </tr>
             <tr>
                 <td>MQTT Broker</td>
                 <td><input type="text" name="mqtt_server" value="||MQTT_SERVER||"> </td>
@@ -25,7 +28,19 @@
             <tr>
                 <td>OTA enabled</td>
                 <td><input type="checkbox" name="ota_enabled" value="true" ||OTA_ENABLED||></td>
-            </tr>            
+            </tr>
+            <tr>
+                <td>LED enabled</td>
+                <td><input type="checkbox" name="led_enabled" value="true" ||LED_ENABLED||></td>
+            </tr>
+            <tr>
+                <td>OLED enabled</td>
+                <td><input type="checkbox" name="oled_enabled" value="true" ||OLED_ENABLED||></td>
+            </tr>
+            <tr>
+                <td>Selftest enabled</td>
+                <td><input type="checkbox" name="selftest_enabled" value="true" ||SELFTEST_ENABLED||></td>
+            </tr>
         </table>
         <br>
         <input type="submit" value="Submit">

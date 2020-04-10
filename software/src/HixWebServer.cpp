@@ -46,7 +46,7 @@ bool HixWebServer::shouldReplacePlaceholders(String filename) {
 
 // send the right file to the client (if it exists)
 bool HixWebServer::handleFileRead(String path) {
-    char buf[1024];
+    char buf[2048];
     Serial.println("handleFileRead: " + path);
     //check for postback of config data
     if (path.endsWith("/postconfig")) {
@@ -89,10 +89,14 @@ bool HixWebServer::handlePostConfig(void) {
         return false;
     }
     //handle parameters
+    if (hasArg("nbr_bootups")) m_config.setNumberOfBootUps(arg("nbr_bootups").toInt());
     if (hasArg("mqtt_server")) m_config.setMQTTServer(arg("mqtt_server").c_str());
     if (hasArg("room")) m_config.setRoom(arg("room").c_str());
     if (hasArg("device_tag")) m_config.setDeviceTag(arg("device_tag").c_str());
     m_config.setOTAEnabled(hasArg("ota_enabled"));
+    m_config.setLEDEnabled(hasArg("led_enabled"));
+    m_config.setOLEDEnabled(hasArg("oled_enabled"));
+    m_config.setSelfTestEnabled(hasArg("selftest_enabled"));
     //write to epprom
     m_config.commitToEEPROM();
     //send reply

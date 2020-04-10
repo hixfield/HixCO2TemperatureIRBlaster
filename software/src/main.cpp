@@ -48,6 +48,8 @@ HixMQTT g_mqtt(Secret::WIFI_SSID,
                g_config.getDeviceTag());
 
 enum Color : uint32_t {
+    black  = 0x000000,
+    white  = 0xFFFFFF,
     red    = 0xFF0000,
     green  = 0x00FF00,
     blue   = 0x0000FF,
@@ -191,6 +193,31 @@ bool checkIR(void) {
     return false;
 }
 
+void selfTest(void) {
+    Serial.println(F("Running self test..."));
+    //display version while running the self test...
+    Serial.println(F("Showing version on display"));
+    g_display.drawDisplayVersion(g_config.getDeviceType(), g_config.getDeviceVersion());
+    //show colors on led
+    Serial.println(F("Showing green-red-oragne-blue-white on LED"));
+    setLedColor(Color::green);
+    delay(300);
+    setLedColor(Color::red);
+    delay(300);
+    setLedColor(Color::orange);
+    delay(300);
+    setLedColor(Color::blue);
+    delay(300);
+    setLedColor(Color::white);
+    //beep our led 5 times
+    Serial.println(F("Beeping 5 times"));
+    g_beeper.blink(true, 5, 100);
+    //switch off airco
+    Serial.println(F("Setting AC off"));
+    AC_Off();
+    //all done
+    Serial.println(F("Selftest complate"));
+}
 
 //////////////////////////////////////////////////////////////////////////////////
 // Setup
@@ -202,14 +229,18 @@ void setup() {
     Serial.print(g_config.getDeviceType());
     Serial.print(F(" "));
     Serial.println(g_config.getDeviceVersion());
+    //increment our counter
+    g_config.incrementNumberOfBootUps();
+    Serial.print(F("Number of bootups: "));
+    Serial.println(g_config.getNumberOfBootUps());
     //disconnect WiFi -> seams to help for bug that after upload wifi does not want to connect again...
     Serial.println(F("Disconnecting WIFI"));
     WiFi.disconnect();
     // setup display
     Serial.println(F("Setting up display"));
     if (!g_display.begin()) resetWithMessage("SSD1306 allocation failed, resetting");
-    g_display.drawDisplayVersion(g_config.getDeviceType(), g_config.getDeviceVersion());
-    delay(2000);
+    g_display.clearDisplay();
+    g_display.display();
     //setup beeper
     Serial.println(F("Setup beeper"));
     g_beeper.begin();
@@ -221,13 +252,7 @@ void setup() {
     //setup RGB let
     Serial.println(F("Setup RDB LED"));
     g_rgbLed.begin();
-    delay(300);
-    setLedColor(Color::green);
-    setLedColor(Color::red);
-    delay(300);
-    setLedColor(Color::orange);
-    delay(300);
-    setLedColor(Color::blue);
+    setLedColor(Color::black);
     // setup CO2 sensor
     Serial.println(F("Setting up CO2 sensor"));
     g_mhz19Serial.begin(9600);
@@ -250,8 +275,11 @@ void setup() {
     //setup the server
     Serial.println(F("Setting up web server"));
     g_webServer.begin();
+    //run selftest if required
+    if (g_config.getSelfTestEnabled()) {
+        selfTest();
+    }
     //all done
-    g_beeper.blink(true, 5, 100);
     Serial.println(F("Setup complete"));
 }
 
@@ -272,27 +300,33 @@ void loop() {
         g_fCurrentTemp = g_temperature.getTemp();
         g_nCurrentCO2  = g_mhz19.getCO2();
         g_nCurrentRSSI = WiFi.RSSI();
-        //set let
-        if (g_mqtt.isConnected()) {
-            setLedColorForCO2(g_nCurrentCO2);
+        //set led
+        if (g_config.getLEDEnabeled()) {
+            if (g_mqtt.isConnected()) {
+                setLedColorForCO2(g_nCurrentCO2);
+            } else {
+                setLedColor(Color::blue);
+            }
         } else {
-            setLedColor(Color::blue);
+            setLedColor(Color::black);
         }
-        //show on display
+    //show on display
+    if (g_config.getOLEDEnabled()) {
         g_display.showStatus(g_fCurrentTemp,
                              g_nCurrentCO2,
                              g_nCurrentRSSI,
                              g_bLoopToggle);
-        // log to serial
-        Serial.print(g_fCurrentTemp);
-        Serial.print(F(" C ; "));
-        Serial.print(g_nCurrentCO2);
-        Serial.print(F(" PPM"));
-        Serial.println();
     }
-    if (g_logger.isExpired(true)) {
-        g_mqtt.publishStatusValues(g_nCurrentCO2, g_fCurrentTemp);
-    }
+    // log to serial
+    Serial.print(g_fCurrentTemp);
+    Serial.print(F(" C ; "));
+    Serial.print(g_nCurrentCO2);
+    Serial.print(F(" PPM"));
+    Serial.println();
+}
+if (g_logger.isExpired(true)) {
+    g_mqtt.publishStatusValues(g_nCurrentCO2, g_fCurrentTemp);
+}
 }
 
 //////////////////////////////////////////////////////////////////////////////////

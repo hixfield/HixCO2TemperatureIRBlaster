@@ -28,6 +28,7 @@ void HixDisplay::showStatus(float fTemp, int nCO2, int nRSSI, bool bLoopToggle) 
     char szVar2[10]      = "";
     char szTempSymbol[2] = "C";
     clearDisplay();
+    setTextSize(2);
     setTextColor(WHITE);
     //draw temperature
     dtostrf(fTemp, 0, 1, szVar1);
