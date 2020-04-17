@@ -30,8 +30,11 @@ MHZ19               g_mhz19;
 SoftwareSerial      g_mhz19Serial(13, 16);
 HixWebServer        g_webServer(g_config);
 IRSamsungAc         g_IRTransmitter(15);
-IRrecv              g_IRReciever(12, 1024, 40, true);
-
+//disable IR Receiving seams to make firmware more stable
+//seam to be getting random resets when enabled...
+#ifdef IRIN_ENABLED
+IRrecv g_IRReciever(12, 1024, 40, true);
+#endif
 //global variables
 float g_fCurrentTemp = 0;
 int   g_nCurrentCO2  = 0;
@@ -134,7 +137,9 @@ void AC_On(int nTemperature) {
     Serial.print(nTemperature);
     Serial.println(" C");
     //to avoid detecting our own transmitted signal, switch off detector first
+#ifdef IRIN_ENABLED
     g_IRReciever.disableIRIn();
+#endif
     //transmit our commands
     g_IRTransmitter.on();
     g_IRTransmitter.setFan(kSamsungAcFanAuto);
@@ -143,7 +148,9 @@ void AC_On(int nTemperature) {
     g_IRTransmitter.setSwing(true);
     g_IRTransmitter.send();
     //re-enable our IR detector
-    g_IRReciever.enableIRIn();
+#ifdef IRIN_ENABLED
+//g_IRReciever.enableIRIn();
+#endif
     //keep our state
     g_bACIsOn = true;
 }
@@ -152,12 +159,14 @@ void AC_On(int nTemperature) {
 void AC_Off(void) {
     Serial.print("AC OFF");
     //to avoid detecting our own transmitted signal, switch off detector first
+#ifdef IRIN_ENABLED
     g_IRReciever.disableIRIn();
+#endif
     //transmit our commands
     g_IRTransmitter.off();
     g_IRTransmitter.send();
     //re-enable our IR detector
-    g_IRReciever.enableIRIn();
+    //g_IRReciever.enableIRIn();
     //keep our state
     g_bACIsOn = false;
 }
@@ -189,7 +198,8 @@ bool handleIRCommand(decode_results results) {
 
 bool checkIR(void) {
     decode_results results;
-    // Check if the IR code has been received.
+    //Check if the IR code has been received.
+#ifdef IRIN_ENABLED
     if (g_IRReciever.decode(&results)) {
         // Check if we got an IR message that was to big for our capture buffer.
         if (results.overflow) Serial.println("Error IR capture buffer overflow");
@@ -199,6 +209,7 @@ bool checkIR(void) {
         //did find something!
         return handleIRCommand(results);
     }
+#endif
     //return not found
     return false;
 }
@@ -273,9 +284,11 @@ void setup() {
     Serial.println("Setting up IR Transmitter");
     g_IRTransmitter.begin();
     //configure receiver
+#ifdef IRIN_ENABLED
     Serial.println("Setting up IR Receiver");
     g_IRReciever.setUnknownThreshold(12);
     g_IRReciever.enableIRIn();
+#endif
     // configure MQTT
     Serial.println(F("Setting up MQTT"));
     if (!g_mqtt.begin()) resetWithMessage("MQTT allocation failed, resetting");
@@ -320,23 +333,23 @@ void loop() {
         } else {
             setLedColor(Color::black);
         }
-    //show on display
-    if (g_config.getOLEDEnabled()) {
-        g_display.showStatus(g_fCurrentTemp,
-                             g_nCurrentCO2,
-                             g_nCurrentRSSI,
-                             g_bLoopToggle);
+        //show on display
+        if (g_config.getOLEDEnabled()) {
+            g_display.showStatus(g_fCurrentTemp,
+                                 g_nCurrentCO2,
+                                 g_nCurrentRSSI,
+                                 g_bLoopToggle);
+        }
+        // log to serial
+        Serial.print(g_fCurrentTemp);
+        Serial.print(F(" C ; "));
+        Serial.print(g_nCurrentCO2);
+        Serial.print(F(" PPM"));
+        Serial.println();
     }
-    // log to serial
-    Serial.print(g_fCurrentTemp);
-    Serial.print(F(" C ; "));
-    Serial.print(g_nCurrentCO2);
-    Serial.print(F(" PPM"));
-    Serial.println();
-}
-if (g_logger.isExpired(true)) {
-    g_mqtt.publishStatusValues(g_nCurrentCO2, g_fCurrentTemp);
-}
+    if (g_logger.isExpired(true)) {
+        g_mqtt.publishStatusValues(g_nCurrentCO2, g_fCurrentTemp);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////

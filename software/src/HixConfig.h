@@ -29,7 +29,7 @@ class HixConfig {
     //getters
     int          getNumberOfBootUps(void);
     const char * getDeviceType(void) { return "HixCO2TemperatureIRBlaster"; };
-    const char * getDeviceVersion(void) { return "2.0.0"; };
+    const char * getDeviceVersion(void) { return "2.0.1"; };
     const char * getMQTTServer(void);
     const char * getRoom(void);
     const char * getDeviceTag(void);
