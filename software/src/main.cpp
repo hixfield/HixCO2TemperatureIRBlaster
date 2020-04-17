@@ -97,13 +97,23 @@ void configureOTA() {
     ArduinoOTA.begin();
 }
 
-void setLedColor(Color color) {
-    g_rgbLed.setPixelColor(0, color);
+void setLedColor(Color color, u32_t nDimFactor = 16) {
+    //make base colors
+    u32_t nR = color >> 16;
+    u32_t nG = (color & 0x00FF00) >> 8;
+    u32_t nB = color & 0x0000FF;
+    //take dimming into account
+    nR /= nDimFactor;
+    nG /= nDimFactor;
+    nB /= nDimFactor;
+    //reassemble
+    u32_t nDimmedColor = (nR << 16) | (nG << 8) | nB;
+    g_rgbLed.setPixelColor(0, nDimmedColor);
     g_rgbLed.show();
 }
 
 void setLedColorForCO2(int nCO2ppm) {
-    if (nCO2ppm < 600) {
+    if (nCO2ppm < 800) {
         setLedColor(Color::green);
         return;
     }
