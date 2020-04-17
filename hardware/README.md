@@ -1,4 +1,4 @@
-# PCB
+# HixCO2TemperatureIRBlaster - Hardware
 The respository contains the EagleCAD file + JLCPCB zip export (in the `/hardware` folder)
 
 | Top                                 | Bottom                                 |
