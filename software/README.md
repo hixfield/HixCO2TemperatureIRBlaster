@@ -11,21 +11,20 @@
 * make sure you have set your WIFI credentials in the secret.cpp
 * make sure you have PlatformIO correctly setup in your Microsoft Visual Studio Code
 * open the firmware in Microsoft Visual Studio Code
-* 
+
 ### Step 1: Initial upload via serial cable
 * make sure your USB/FTDI is set to 5V
 * insert your USB to FTDI onto J1 of the PCB
 * press the switches in this order:
- - press RESET and hold
- - press PROG and hold
- - release PROG
- - release RESET
+	- press RESET and hold
+	- press PROG and hold
+	- release PROG
+	- release RESET
 * this puts the device is programming mode (std ESP8266 procedure)
 * if you have the buzzer installed, is should now be constantly beeping
-
 * open the platformio.ini and configure the upload port and speed to use your USB/FTDI for example:
- - `upload_speed = 460800`
- - `upload_port = /dev/cu.usbserial-A50285BI`
+	- `upload_speed = 460800`
+	- `upload_port = /dev/cu.usbserial-A50285BI`
 * upload to the device
 * during uploading the buzzer will make some different noises this is because its actually connect to an communication pin (normal)
 * press the reset button and the device should boot, but it will take much longer then usual because the SPIFFS is not yet flashed
@@ -34,8 +33,8 @@
 * for some reason I cannot get the SPIFFS to flash over the serial FTDI, but it does work OTA
 * that's ok because the device can already boot (but takes a bit longer) and by default has OTA enabled
 * reconfigure the platformio.ini file to now flash OTA:
- - `upload_protocol = espota`
- - `upload_port = 192.168.99.234` => **fill in the IP of YOUR device**
+	- `upload_protocol = espota`
+	- `upload_port = 192.168.99.234` => **fill in the IP of YOUR device**
 * try uploading the firmware again but this time OTA
 * OTA uploading resets the device automatically so you don't have to press the RESET button (be patient!)
 * now you can "Upload File Systems image" via Visual Studio Code / platformio
