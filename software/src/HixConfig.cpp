@@ -125,4 +125,6 @@ void HixConfig::replacePlaceholders(String & contents) {
     contents.replace("||LED_ENABLED||", getLEDEnabeled() ? "checked" : "");
     contents.replace("||OLED_ENABLED||", getOLEDEnabled() ? "checked" : "");
     contents.replace("||SELFTEST_ENABLED||", getSelfTestEnabled() ? "checked" : "");
+    contents.replace("||RESET_REASON||", ESP.getResetReason());
+    contents.replace("||RESET_INFO||", ESP.getResetInfo());
 }

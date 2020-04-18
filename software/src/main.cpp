@@ -18,6 +18,7 @@
 #include <SoftwareSerial.h>
 #include <ir_Samsung.h>
 
+   
 //connected devices and software modules
 HixConfig           g_config;
 HixTimeout          g_sampler(1000, true);
@@ -319,9 +320,14 @@ void loop() {
     //my own processing
     if (g_sampler.isExpired(true)) {
         g_bLoopToggle = !g_bLoopToggle;
-        // load sensor values
+        // load CO2 and check error condition
+        int nTempCO2 = g_mhz19.getCO2();
+        //only use the new value if there was no error
+        if (g_mhz19.errorCode == RESULT_OK) {
+            g_nCurrentCO2 = nTempCO2;
+        }
+        //read other sensor values
         g_fCurrentTemp = g_temperature.getTemp();
-        g_nCurrentCO2  = g_mhz19.getCO2();
         g_nCurrentRSSI = WiFi.RSSI();
         //set led
         if (g_config.getLEDEnabeled()) {

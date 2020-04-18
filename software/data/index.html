@@ -2,7 +2,8 @@
 <html>
 
 <body>
-    <h1>||DEVICE_TYPE|| ||DEVICE_VERSION||</h1>
+    <h1>||DEVICE_TYPE|| v||DEVICE_VERSION||</h1>
+    <h2>Configuration</h2>
     <form action="/postconfig" method="post">
         <table>
             <tr>
@@ -45,7 +46,16 @@
         <br>
         <input type="submit" value="Submit">
     </form>
-
+    <h2>Information</h2>
+    <table>
+        <tr>
+            <td width="200">Reset reason</td>
+            <td>||RESET_REASON||</td>
+        </tr>
+        <tr>
+            <td width="200">Reset info</td>
+            <td>||RESET_INFO||</td>
+        </tr>
+    </table>
 </body>
-
 </html>
