@@ -1,6 +1,6 @@
 #include "HixMQTT.h"
 #include <Arduino.h>
-#include <ArduinoJson.h>
+
 
 HixMQTT::HixMQTT(const char * szWifi_SSID,
                  const char * szWiFi_Password,
@@ -8,7 +8,9 @@ HixMQTT::HixMQTT(const char * szWifi_SSID,
                  const char * szDeviceType,
                  const char * szDeviceVersion,
                  const char * szRoom,
-                 const char * szDeviceTag) : HixMQTTBase(szWifi_SSID, szWiFi_Password, szMQTT_Server, szDeviceType, szDeviceVersion, szRoom, szDeviceTag) {
+                 const char * szDeviceTag):
+                  HixMQTTBase(szWifi_SSID, szWiFi_Password, szMQTT_Server, szDeviceType, szDeviceVersion, szRoom, szDeviceTag),
+                  m_jsonDoc(500) {
 }
 
 
@@ -51,17 +53,15 @@ bool HixMQTT::publishStatusValues(int nCO2, float fTemperature) {
 */
 
 String HixMQTT::influxDBJson(int nCO2, float fTemperature) {
-    DynamicJsonDocument doc(500);
-
+    m_jsonDoc.clear();
     //create the measurements => fields
-    JsonObject doc_0     = doc.createNestedObject();
+    JsonObject doc_0     = m_jsonDoc.createNestedObject();
     doc_0["co2"]         = nCO2;
     doc_0["temperature"] = fTemperature;
     doc_0["wifi_rssi"]   = WiFi.RSSI();
-    ;
 
     //the device props => tags
-    JsonObject doc_1        = doc.createNestedObject();
+    JsonObject doc_1        = m_jsonDoc.createNestedObject();
     doc_1["device_type"]    = m_deviceType;
     doc_1["device_version"] = m_deviceVersion;
     doc_1["device_tag"]     = m_deviceTag;
@@ -69,7 +69,6 @@ String HixMQTT::influxDBJson(int nCO2, float fTemperature) {
     doc_1["wifi_ssid"]      = WiFi.SSID();
 
     //to string
-    String jsonString;
-    serializeJson(doc, jsonString);
-    return jsonString;
+    serializeJson(m_jsonDoc, m_jsonString);
+    return m_jsonString;
 }

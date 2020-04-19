@@ -9,16 +9,18 @@
 #include <DS18B20Temperature.h>
 #include <HixPinDigitalOutput.h>
 #include <HixTimeout.h>
+#include <MHZ19.h>
+#include <SoftwareSerial.h>
 #include <IRac.h>
+#include <ir_Samsung.h>
+#ifdef IRIN_ENABLED
 #include <IRrecv.h>
 #include <IRremoteESP8266.h>
 #include <IRtext.h>
 #include <IRutils.h>
-#include <MHZ19.h>
-#include <SoftwareSerial.h>
-#include <ir_Samsung.h>
+#endif
 
-   
+
 //connected devices and software modules
 HixConfig           g_config;
 HixTimeout          g_sampler(1000, true);
@@ -198,9 +200,9 @@ bool handleIRCommand(decode_results results) {
 }
 
 bool checkIR(void) {
-    decode_results results;
     //Check if the IR code has been received.
 #ifdef IRIN_ENABLED
+    decode_results results;
     if (g_IRReciever.decode(&results)) {
         // Check if we got an IR message that was to big for our capture buffer.
         if (results.overflow) Serial.println("Error IR capture buffer overflow");

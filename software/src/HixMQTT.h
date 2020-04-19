@@ -2,10 +2,13 @@
 #define HixMQTT_h
 
 #include <HixMQTTBase.h>
-
+#include <ArduinoJson.h>
 
 class HixMQTT : public HixMQTTBase {
   private:
+    //used when constructing json (seams to be more stable then allocating on stack...)
+    DynamicJsonDocument m_jsonDoc;
+    String m_jsonString;
     //puts all values in one single json compatible with influxDB
     String influxDBJson(int nCO2, float fTemperature);
 
