@@ -127,4 +127,6 @@ void HixConfig::replacePlaceholders(String & contents) {
     contents.replace("||SELFTEST_ENABLED||", getSelfTestEnabled() ? "checked" : "");
     contents.replace("||RESET_REASON||", ESP.getResetReason());
     contents.replace("||RESET_INFO||", ESP.getResetInfo());
+    contents.replace("||FREE_HEAP||", String(ESP.getFreeHeap()));
+    contents.replace("||FREE_STACK||", String(ESP.getFreeContStack()));
 }
