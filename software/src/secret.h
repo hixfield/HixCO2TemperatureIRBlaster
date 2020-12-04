@@ -7,7 +7,7 @@ class Secret {
     static const char * WIFI_SSID;
     static const char * WIFI_PWD;
     static const char * MQTT_SERVER;
-    static const char * CONFIGPWD;
+    static const char * CONFIG_PWD;
 };
 
 #endif

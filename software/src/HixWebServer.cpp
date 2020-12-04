@@ -84,7 +84,7 @@ bool HixWebServer::handleFileRead(String path) {
 
 bool HixWebServer::handlePostConfig(void) {
     //check password
-    if (arg("password") != Secret::CONFIGPWD) {
+    if (arg("password") != Secret::CONFIG_PWD) {
         send(400, "text/plain", "Bad password");
         return false;
     }
