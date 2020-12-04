@@ -23,7 +23,7 @@
 
 //connected devices and software modules
 HixConfig           g_config;
-HixTimeout          g_sampler(1000, true);
+HixTimeout          g_sampler(60000, true);
 HixTimeout          g_logger(5000, true);
 HixDisplay          g_display;
 HixPinDigitalOutput g_beeper(2);
