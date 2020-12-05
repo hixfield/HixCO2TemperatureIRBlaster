@@ -29,9 +29,11 @@
 * during uploading the buzzer will make some different noises this is because its actually connect to an communication pin (normal)
 * press the reset button and the device should boot, but it will take much longer then usual because the SPIFFS is not yet flashed
 
-### Step 2: Upload the SPIFFS filesystem OTA
-* for some reason I cannot get the SPIFFS to flash over the serial FTDI, but it does work OTA
-* that's ok because the device can already boot (but takes a bit longer) and by default has OTA enabled
+### Step 2: Upload the SPIFFS filesystem 
+* seams to only work using `pio run -t uploadfs` (platformio "upload filesystem image" does not work)
+* open terminal and execute the above command
+
+### Step 3: switch to OTA
 * reconfigure the platformio.ini file to now flash OTA:
 	- `upload_protocol = espota`
 	- `upload_port = 192.168.99.234` => **fill in the IP of YOUR device**
