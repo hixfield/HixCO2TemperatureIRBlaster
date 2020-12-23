@@ -11,15 +11,6 @@
 #include <HixTimeout.h>
 #include <MHZ19.h>
 #include <SoftwareSerial.h>
-#include <IRac.h>
-#include <ir_Samsung.h>
-#ifdef IRIN_ENABLED
-#include <IRrecv.h>
-#include <IRremoteESP8266.h>
-#include <IRtext.h>
-#include <IRutils.h>
-#endif
-
 
 //connected devices and software modules
 HixConfig           g_config;
@@ -32,18 +23,16 @@ Adafruit_NeoPixel   g_rgbLed = Adafruit_NeoPixel(1, 0, NEO_RGB + NEO_KHZ400);
 MHZ19               g_mhz19;
 SoftwareSerial      g_mhz19Serial(13, 16);
 HixWebServer        g_webServer(g_config);
-IRSamsungAc         g_IRTransmitter(15);
-//disable IR Receiving seams to make firmware more stable
-//seam to be getting random resets when enabled...
-#ifdef IRIN_ENABLED
-IRrecv g_IRReciever(12, 1024, 40, true);
-#endif
+
+//Not used in this firmware:
+//IRSamsungAc         g_IRTransmitter(15);
+//IRrecv g_IRReciever(12, 1024, 40, true);
+
 //global variables
 float g_fCurrentTemp = 0;
 int   g_nCurrentCO2  = 0;
 int   g_nCurrentRSSI = 0;
 bool  g_bLoopToggle  = false;
-bool  g_bACIsOn      = false;
 
 HixMQTT g_mqtt(Secret::WIFI_SSID,
                Secret::WIFI_PWD,
@@ -130,91 +119,24 @@ void setLedColorForCO2(int nCO2ppm) {
     setLedColor(Color::red);
 }
 
-void printACState() {
-    Serial.println("Samsung A/C remote is in the following state:");
-    Serial.printf("  %s\n", g_IRTransmitter.toString().c_str());
-}
-
-void AC_On(int nTemperature) {
-    Serial.print("AC ON to ");
-    Serial.print(nTemperature);
-    Serial.println(" C");
-    //to avoid detecting our own transmitted signal, switch off detector first
-#ifdef IRIN_ENABLED
-    g_IRReciever.disableIRIn();
-#endif
-    //transmit our commands
-    g_IRTransmitter.on();
-    g_IRTransmitter.setFan(kSamsungAcFanAuto);
-    g_IRTransmitter.setMode(kSamsungAcAuto);
-    g_IRTransmitter.setTemp(nTemperature);
-    g_IRTransmitter.setSwing(true);
-    g_IRTransmitter.send();
-    //re-enable our IR detector
-#ifdef IRIN_ENABLED
-//g_IRReciever.enableIRIn();
-#endif
-    //keep our state
-    g_bACIsOn = true;
-}
-
-
-void AC_Off(void) {
-    Serial.print("AC OFF");
-    //to avoid detecting our own transmitted signal, switch off detector first
-#ifdef IRIN_ENABLED
-    g_IRReciever.disableIRIn();
-#endif
-    //transmit our commands
-    g_IRTransmitter.off();
-    g_IRTransmitter.send();
-    //re-enable our IR detector
-    //g_IRReciever.enableIRIn();
-    //keep our state
-    g_bACIsOn = false;
-}
-
-void AC_toggle(int nTemperature) {
-    if (g_bACIsOn)
-        AC_Off();
-    else
-        AC_On(nTemperature);
-}
-
-bool handleIRCommand(decode_results results) {
-    switch (results.value) {
-        //Telenet IR : play button
-    case 0x48C6EAFF:
-        AC_On(28);
-        return true;
-        //Telenet IR : pause button
-    case 0xAA33049:
-        AC_Off();
-        return true;
-    default:
-        Serial.print("Unrecognized code received ");
-        Serial.println(resultToHexidecimal(&results));
+void printInfoMhz() {
+    char myVersion[4];
+    g_mhz19.getVersion(myVersion);
+    Serial.print("\nFirmware Version: ");
+    for (byte i = 0; i < 4; i++) {
+        Serial.print(myVersion[i]);
+        if (i == 1)
+            Serial.print(".");
     }
-    //nothing handled
-    return false;
-}
-
-bool checkIR(void) {
-    //Check if the IR code has been received.
-#ifdef IRIN_ENABLED
-    decode_results results;
-    if (g_IRReciever.decode(&results)) {
-        // Check if we got an IR message that was to big for our capture buffer.
-        if (results.overflow) Serial.println("Error IR capture buffer overflow");
-        // Display the basic output of what we found.
-        Serial.print("IR Received: ");
-        Serial.println(resultToHexidecimal(&results));
-        //did find something!
-        return handleIRCommand(results);
-    }
-#endif
-    //return not found
-    return false;
+    Serial.println("");
+    Serial.print("Range: ");
+    Serial.println(g_mhz19.getRange());
+    Serial.print("Background CO2: ");
+    Serial.println(g_mhz19.getBackgroundCO2());
+    Serial.print("Temperature Cal: ");
+    Serial.println(g_mhz19.getTempAdjustment());
+    Serial.print("ABC Status: ");
+    g_mhz19.getABC() ? Serial.println("ON") : Serial.println("OFF");
 }
 
 void selfTest(void) {
@@ -236,11 +158,10 @@ void selfTest(void) {
     //beep our led 5 times
     Serial.println(F("Beeping 5 times"));
     g_beeper.blink(true, 5, 100);
-    //switch off airco
-    Serial.println(F("Setting AC off"));
-    AC_Off();
+    //extract info of the CO2 sensor
+    printInfoMhz();
     //all done
-    Serial.println(F("Selftest complate"));
+    Serial.println(F("Selftest complete"));
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -249,6 +170,10 @@ void selfTest(void) {
 
 void setup() {
     Serial.begin(115200);
+    //start with a clean line
+    Serial.println();
+    Serial.println();
+    //display my version
     Serial.print(F("Startup "));
     Serial.print(g_config.getDeviceType());
     Serial.print(F(" "));
@@ -281,17 +206,8 @@ void setup() {
     Serial.println(F("Setting up CO2 sensor"));
     g_mhz19Serial.begin(9600);
     g_mhz19.begin(g_mhz19Serial);
-    g_mhz19.setRange(5000);
+    g_mhz19.setRange(2000);
     g_mhz19.autoCalibration();
-    //configure ir transmitter
-    Serial.println("Setting up IR Transmitter");
-    g_IRTransmitter.begin();
-    //configure receiver
-#ifdef IRIN_ENABLED
-    Serial.println("Setting up IR Receiver");
-    g_IRReciever.setUnknownThreshold(12);
-    g_IRReciever.enableIRIn();
-#endif
     // configure MQTT
     Serial.println(F("Setting up MQTT"));
     if (!g_mqtt.begin()) resetWithMessage("MQTT allocation failed, resetting");
@@ -318,7 +234,6 @@ void loop() {
     g_mqtt.loop();
     g_webServer.handleClient();
     ArduinoOTA.handle();
-    checkIR();
     //my own processing
     if (g_sampler.isExpired(true)) {
         g_bLoopToggle = !g_bLoopToggle;
@@ -350,9 +265,11 @@ void loop() {
         }
         // log to serial
         Serial.print(g_fCurrentTemp);
-        Serial.print(F(" C ; "));
+        Serial.print(F(" °C ; "));
         Serial.print(g_nCurrentCO2);
-        Serial.print(F(" PPM"));
+        Serial.print(F(" ppm ; "));
+        Serial.print(g_nCurrentRSSI);
+        Serial.print(F(" dbm"));
         Serial.println();
     }
     if (g_logger.isExpired(true)) {
