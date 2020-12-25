@@ -22,7 +22,7 @@ DS18B20Temperature  g_temperature(14);
 Adafruit_NeoPixel   g_rgbLed = Adafruit_NeoPixel(1, 0, NEO_RGB + NEO_KHZ400);
 MHZ19               g_mhz19;
 SoftwareSerial      g_mhz19Serial(13, 16);
-HixWebServer        g_webServer(g_config);
+HixWebServer        g_webServer(g_config, g_mhz19);
 
 //Not used in this firmware:
 //IRSamsungAc         g_IRTransmitter(15);
@@ -207,7 +207,7 @@ void setup() {
     g_mhz19Serial.begin(9600);
     g_mhz19.begin(g_mhz19Serial);
     g_mhz19.setRange(2000);
-    g_mhz19.autoCalibration();
+    g_mhz19.autoCalibration(g_config.getAutoBackgroundCalibrationEnabled());
     // configure MQTT
     Serial.println(F("Setting up MQTT"));
     if (!g_mqtt.begin()) resetWithMessage("MQTT allocation failed, resetting");

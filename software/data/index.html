@@ -2,7 +2,9 @@
 <html>
 
 <body>
-    <h1>||DEVICE_TYPE|| v||DEVICE_VERSION||</h1>
+    <h1>||DEVICE_TYPE||</h1>
+    v||DEVICE_VERSION||<br>
+    ||BUILD_DATE|| ||BUILD_TIME||
     <h2>Configuration</h2>
     <form action="/postconfig" method="post">
         <table>
@@ -42,11 +44,66 @@
                 <td>Selftest enabled</td>
                 <td><input type="checkbox" name="selftest_enabled" value="true" ||SELFTEST_ENABLED||></td>
             </tr>
+            <tr>
+                <td>Auto Background Calibration (ABC) enabled</td>
+                <td><input type="checkbox" name="abc_enabled" value="true" ||ABC_ENABLED||></td>
+            </tr>
         </table>
         <br>
         <input type="submit" value="Submit">
     </form>
-    <h2>Information</h2>
+    <h2>MH-Z19 CO2 sensor info</h2>
+    <table>
+        <tr>
+            <td width="200">Firmware</td>
+            <td>||MHZ19_FIRMWARE||</td>
+        </tr>
+        <tr>
+            <td width="200">Current CO2</td>
+            <td>||MHZ19_CO2||</td>
+        </tr>
+        <tr>
+            <td width="200">Current transmittance</td>
+            <td>||MHZ19_TRANSMITTANCE||</td>
+        </tr>
+        <tr>
+            <td width="200">Current temperature</td>
+            <td>||MHZ19_TEMPERATURE||</td>
+        </tr>
+        <tr>
+            <td width="200">Current accuracy</td>
+            <td>||MHZ19_ACCURACY||</td>
+        </tr>
+        <tr>
+            <td width="200">Range</td>
+            <td>||MHZ19_RANGE||</td>
+        </tr>
+        <tr>
+            <td width="200">Background CO2</td>
+            <td>||MHZ19_BACKGROUNDCO2||</td>
+        </tr>
+        <tr>
+            <td width="200">Temperature calibration</td>
+            <td>||MHZ19_TEMPERATURECAL||</td>
+        </tr>
+        <tr>
+            <td width="200">Auto Background Calibration</td>
+            <td>||MHZ19_ABC||</td>
+        </tr>
+    </table>
+    <h2>MH-Z19 CO2 sensor calibration</h2>
+    <form action="/calibrate" method="post">
+        <table>
+            <tr>
+                <td width="200">Password</td>
+                <td><input type="password" name="password" value=""></td>
+            </tr>
+        </table>
+        <i style="color:crimson;">Only press the calibrate button if the device has been in open air for at least 20 minutes.</i>
+        <br>
+        <input type="submit" value="Calibrate NOW!">
+    </form>
+    <h2>ESP8266 info</h2>
     <table>
         <tr>
             <td width="200">Reset reason</td>
@@ -58,4 +115,5 @@
         </tr>
     </table>
 </body>
+
 </html>

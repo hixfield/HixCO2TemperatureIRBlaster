@@ -45,6 +45,10 @@ bool HixConfig::getSelfTestEnabled(void) {
     return data.bSelfTestEnabled;
 }
 
+bool HixConfig::getAutoBackgroundCalibrationEnabled(void) {
+    return data.bAutoBackgroundCalibrationEnabled;
+}
+
 void HixConfig::setNumberOfBootUps(int bValue) {
     data.nNumberOfBootUps = bValue;
 }
@@ -81,6 +85,10 @@ void HixConfig::setSelfTestEnabled(bool bValue) {
     data.bSelfTestEnabled = bValue;
 }
 
+void HixConfig::setAutoBackgroundCalibrationEnabled(bool bValue) {
+    data.bAutoBackgroundCalibrationEnabled = bValue;
+}
+
 void HixConfig::incrementNumberOfBootUps(void) {
     data.nNumberOfBootUps++;
     commitToEEPROM();
@@ -111,6 +119,7 @@ void HixConfig::commitDefaults(void) {
     setLEDEnabled(true);
     setOLEDEnabled(true);
     setSelfTestEnabled(true);
+    setAutoBackgroundCalibrationEnabled(false);
     commitToEEPROM();
 }
 
@@ -125,8 +134,11 @@ void HixConfig::replacePlaceholders(String & contents) {
     contents.replace("||LED_ENABLED||", getLEDEnabeled() ? "checked" : "");
     contents.replace("||OLED_ENABLED||", getOLEDEnabled() ? "checked" : "");
     contents.replace("||SELFTEST_ENABLED||", getSelfTestEnabled() ? "checked" : "");
+    contents.replace("||ABC_ENABLED||", getAutoBackgroundCalibrationEnabled() ? "checked" : "");
     contents.replace("||RESET_REASON||", ESP.getResetReason());
     contents.replace("||RESET_INFO||", ESP.getResetInfo());
     contents.replace("||FREE_HEAP||", String(ESP.getFreeHeap()));
     contents.replace("||FREE_STACK||", String(ESP.getFreeContStack()));
+    contents.replace("||BUILD_TIME||", __TIME__);
+    contents.replace("||BUILD_DATE||", __DATE__);
 }

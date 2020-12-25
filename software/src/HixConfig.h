@@ -17,6 +17,7 @@ class HixConfig {
         bool          bLEDEnabled;
         bool          bOLEDEnabled;
         bool          bSelfTestEnabled;
+        bool          bAutoBackgroundCalibrationEnabled;
         unsigned long crc;
     } data;
     //determine crc
@@ -29,7 +30,7 @@ class HixConfig {
     //getters
     int          getNumberOfBootUps(void);
     const char * getDeviceType(void) { return "HixCO2TemperatureIRBlaster"; };
-    const char * getDeviceVersion(void) { return "2.1.0"; };
+    const char * getDeviceVersion(void) { return "2.2.0"; };
     const char * getMQTTServer(void);
     const char * getRoom(void);
     const char * getDeviceTag(void);
@@ -37,6 +38,7 @@ class HixConfig {
     bool         getLEDEnabeled(void);
     bool         getOLEDEnabled(void);
     bool         getSelfTestEnabled(void);
+    bool         getAutoBackgroundCalibrationEnabled(void);
     //setters
     void setNumberOfBootUps(int bValue);
     void setMQTTServer(const char * szValue);
@@ -46,6 +48,7 @@ class HixConfig {
     void setLEDEnabled(bool bValue);
     void setOLEDEnabled(bool bValue);
     void setSelfTestEnabled(bool bValue);
+    void setAutoBackgroundCalibrationEnabled(bool bValue);
     //helpers
     void incrementNumberOfBootUps(void);
     //save to eeprom

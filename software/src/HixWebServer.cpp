@@ -2,8 +2,9 @@
 #include "secret.h"
 #include <FS.h>
 
-HixWebServer::HixWebServer(HixConfig & config) : ESP8266WebServer(80),
-                                                 m_config(config) {
+HixWebServer::HixWebServer(HixConfig & config, MHZ19 & mhz19) : ESP8266WebServer(80),
+                                                                m_config(config),
+                                                                m_mhz19(mhz19) {
     onNotFound([this]() {
         if (!handleFileRead(uri()))
             send(404, "text/plain", "404: Not Found");
@@ -46,11 +47,15 @@ bool HixWebServer::shouldReplacePlaceholders(String filename) {
 
 // send the right file to the client (if it exists)
 bool HixWebServer::handleFileRead(String path) {
-    char buf[2048];
     Serial.println("handleFileRead: " + path);
     //check for postback of config data
     if (path.endsWith("/postconfig")) {
         handlePostConfig();
+        return true;
+    }
+    //check calibration of data...
+    if (path.endsWith("/calibrate")) {
+        handleCalibrate();
         return true;
     }
     // If a folder is requested, send the index file
@@ -60,13 +65,9 @@ bool HixWebServer::handleFileRead(String path) {
     if (SPIFFS.exists(path)) {
         File file = SPIFFS.open(path, "r");
         if (shouldReplacePlaceholders(path)) {
-            //read file in memory and...
-            size_t size = file.readBytes(buf, sizeof(buf));
-            //...zero terminate
-            buf[size] = 0;
-            //create string of it
-            String contents(buf);
+            String contents = file.readString();
             m_config.replacePlaceholders(contents);
+            replacePlaceholdersMHZ19(contents);
             //send it
             send(200, contentType, contents);
         } else {
@@ -97,15 +98,55 @@ bool HixWebServer::handlePostConfig(void) {
     m_config.setLEDEnabled(hasArg("led_enabled"));
     m_config.setOLEDEnabled(hasArg("oled_enabled"));
     m_config.setSelfTestEnabled(hasArg("selftest_enabled"));
+    m_config.setAutoBackgroundCalibrationEnabled(hasArg("abc_enabled"));
     //write to epprom
     m_config.commitToEEPROM();
     //send reply
     const char * szSavedHtml = "/saved.html";
-    File file = SPIFFS.open(szSavedHtml, "r");
+    File         file        = SPIFFS.open(szSavedHtml, "r");
     streamFile(file, getContentType(String(szSavedHtml)));
     file.close();
     //reset!
     delay(1000);
     ESP.reset();
     return true;
+}
+
+bool HixWebServer::handleCalibrate(void) {
+    //check password
+    if (arg("password") != Secret::CONFIG_PWD) {
+        send(400, "text/plain", "Bad password");
+        return false;
+    }
+    //calibrate
+    m_mhz19.calibrateZero();
+    //send reply
+    const char * szSavedHtml = "/calibrate.html";
+    File         file        = SPIFFS.open(szSavedHtml, "r");
+    streamFile(file, getContentType(String(szSavedHtml)));
+    file.close();
+    //return non error
+    return true;
+}
+
+void HixWebServer::replacePlaceholdersMHZ19(String & contents) {
+    //extract version
+    char versionArray[4];
+    m_mhz19.getVersion(versionArray);
+    String version;
+    version += versionArray[0];
+    version += versionArray[1];
+    version += '.';
+    version += versionArray[2];
+    version += versionArray[3];
+    //replace different parameters
+    contents.replace("||MHZ19_FIRMWARE||", version);
+    contents.replace("||MHZ19_CO2||", String(m_mhz19.getCO2()));
+    contents.replace("||MHZ19_TRANSMITTANCE||", String(m_mhz19.getTransmittance()));
+    contents.replace("||MHZ19_TEMPERATURE||", String(m_mhz19.getTemperature()));
+    contents.replace("||MHZ19_ACCURACY||", String(m_mhz19.getAccuracy()));
+    contents.replace("||MHZ19_RANGE||", String(m_mhz19.getRange()));
+    contents.replace("||MHZ19_BACKGROUNDCO2||", String(m_mhz19.getBackgroundCO2()));
+    contents.replace("||MHZ19_TEMPERATURECAL||", String(m_mhz19.getTempAdjustment()));
+    contents.replace("||MHZ19_ABC||", m_mhz19.getABC() ? "ON" : "OFF");
 }

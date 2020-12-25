@@ -50,21 +50,6 @@ void HixDisplay::showStatus(float fTemp, int nCO2, int nRSSI, bool bLoopToggle) 
     display();
 }
 
-void HixDisplay::drawBoxes(int16_t x, int16_t y, bool bFanOn) {
-    static byte progress = 0;
-    if (!bFanOn) {
-        return;
-    }
-    for (int i = 0; i < progress + 1; i++) {
-        fillRect(x, y, 4, 21, WHITE);
-        fillRect(width() - x - 4, y, 4, 21, WHITE);
-        x += 6;
-    }
-
-    progress++;
-    progress %= 4;
-}
-
 //returns the end x position of the string
 int16_t HixDisplay::printCenter(const char * szText, int16_t y) {
     int16_t  x1, y1;
