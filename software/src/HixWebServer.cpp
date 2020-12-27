@@ -119,7 +119,7 @@ bool HixWebServer::handleCalibrate(void) {
         return false;
     }
     //calibrate
-    m_mhz19.calibrateZero();
+    m_mhz19.calibrate();
     //send reply
     const char * szSavedHtml = "/calibrate.html";
     File         file        = SPIFFS.open(szSavedHtml, "r");

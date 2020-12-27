@@ -64,8 +64,8 @@ String HixMQTT::influxDBJson(int nCO2, float fTemperature) {
     doc_1["device_version"] = m_deviceVersion;
     doc_1["device_tag"]     = m_deviceTag;
     doc_1["room"]           = m_room;
+    doc_1["wifi_mac"]       = WiFi.macAddress();
     doc_1["wifi_ssid"]      = WiFi.SSID();
-
     //to string
     String jsonString;
     serializeJson(doc, jsonString);
