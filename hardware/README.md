@@ -30,7 +30,7 @@ The respository contains the EagleCAD file + JLCPCB zip export (in the `/hardwar
 |U1                                  | TSOP2238      
 |U2                                  | LM3940 (SMD)         
 |U3                                  | HLK-PM01 (mains to 5v powerbrick)     
-|U4                                  | DS18B20 -> use an external sensor (to not take over temperature of the case)
+|U4                                  | DS18B20 *Eventhough I have designed the PCB to allow mounting a plain TO-92 DS18B20 externally, it seams to be highly inaccurate because (I suspect) it takes over the heat via its leads from the internal of the case/pcb. Therefore it is better to use an external DS18B20 probe. I have included a case design for a plain TO-92 and external sensor probe (with strain relief).*
 
 ## IR blasting (optional)
 | ID                                 | Part                                                                |
@@ -53,11 +53,18 @@ The repository contains the EagleCAD (in the `/hardware` folder)
 ![Schematic](images/schematic.png)
 
 # 3D printed case
-(the repository contains the stl files (`/hardware/case folder`)
+(the repository contains the stl files (`/hardware/case` folder)
 
-| base                                  | lid                                     |
-|---------------------------------------|-----------------------------------------|
-| ![PCB top view](images/case_base.png) | ![PCB bottom view](images/case_lid.png) |
+## external DS18B20 sensor probe
+| base                                     | lid                                           |
+|------------------------------------------|-----------------------------------------------|
+| ![PCB top view](images/case_probe.jpg) | ![PCB bottom view](images/case_base_probe.png)      |
+| ![PCB top view](images/case_lid.png)     | ![PCB bottom view](images/case_assembled_probe.png) |
 
-![PCB top view](images/case_assembled.png)
-|
+
+## plain TO-92 DS18B20 sensor
+
+| base                                     | lid                                           |
+|------------------------------------------|-----------------------------------------------|
+| ![PCB top view](images/case_plain.jpg) | ![PCB bottom view](images/case_base_plain.png)      |
+| ![PCB top view](images/case_lid.png)     | ![PCB bottom view](images/case_assembled_plain.png) |
