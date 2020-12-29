@@ -8,7 +8,8 @@ HixMQTT::HixMQTT(const char * szWifi_SSID,
                  const char * szDeviceType,
                  const char * szDeviceVersion,
                  const char * szRoom,
-                 const char * szDeviceTag) : HixMQTTBase(szWifi_SSID, szWiFi_Password, szMQTT_Server, szDeviceType, szDeviceVersion, szRoom, szDeviceTag) {
+                 const char * szDeviceTag,
+                 const char * szDeviceBuildTimestamp) : HixMQTTBase(szWifi_SSID, szWiFi_Password, szMQTT_Server, szDeviceType, szDeviceVersion, szRoom, szDeviceTag, szDeviceBuildTimestamp) {
 }
 
 
@@ -59,13 +60,14 @@ String HixMQTT::influxDBJson(int nCO2, float fTemperature) {
     doc_0["wifi_rssi"]   = WiFi.RSSI();
 
     //the device props => tags
-    JsonObject doc_1        = doc.createNestedObject();
-    doc_1["device_type"]    = m_deviceType;
-    doc_1["device_version"] = m_deviceVersion;
-    doc_1["device_tag"]     = m_deviceTag;
-    doc_1["room"]           = m_room;
-    doc_1["wifi_mac"]       = WiFi.macAddress();
-    doc_1["wifi_ssid"]      = WiFi.SSID();
+    JsonObject doc_1                = doc.createNestedObject();
+    doc_1["device_type"]            = m_deviceType;
+    doc_1["device_version"]         = m_deviceVersion;
+    doc_1["device_tag"]             = m_deviceTag;
+    doc_1["device_build_timestamp"] = m_deviceBuildTimestamp;
+    doc_1["room"]                   = m_room;
+    doc_1["wifi_mac"]               = WiFi.macAddress();
+    doc_1["wifi_ssid"]              = WiFi.SSID();
     //to string
     String jsonString;
     serializeJson(doc, jsonString);

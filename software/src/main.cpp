@@ -40,7 +40,8 @@ HixMQTT g_mqtt(Secret::WIFI_SSID,
                g_config.getDeviceType(),
                g_config.getDeviceVersion(),
                g_config.getRoom(),
-               g_config.getDeviceTag());
+               g_config.getDeviceTag(),
+               g_config.getDeviceBuildTimestamp());
 
 enum Color : uint32_t {
     black  = 0x000000,

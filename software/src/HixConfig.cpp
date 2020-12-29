@@ -2,6 +2,9 @@
 #include "secret.h"
 #include <EEPROM.h>
 
+
+
+
 HixConfig::HixConfig() {
     EEPROM.begin(512);
     EEPROM.get(m_nEPPROMBaseAddress, data);
@@ -12,6 +15,10 @@ HixConfig::HixConfig() {
 
 int HixConfig::getNumberOfBootUps(void) {
     return data.nNumberOfBootUps;
+}
+
+const char * HixConfig::getDeviceBuildTimestamp(void) {
+    return __DATE__ " " __TIME__;
 }
 
 const char * HixConfig::getMQTTServer(void) {
@@ -139,6 +146,5 @@ void HixConfig::replacePlaceholders(String & contents) {
     contents.replace("||RESET_INFO||", ESP.getResetInfo());
     contents.replace("||FREE_HEAP||", String(ESP.getFreeHeap()));
     contents.replace("||FREE_STACK||", String(ESP.getFreeContStack()));
-    contents.replace("||BUILD_TIME||", __TIME__);
-    contents.replace("||BUILD_DATE||", __DATE__);
+    contents.replace("||BUILD_TIMESTAMP||", getDeviceBuildTimestamp());
 }
