@@ -49,7 +49,7 @@
 
 ```
 {room}
-   └─── HixCO2
+   └─── HixCO2TemperatureIRBlaster
            └─── {deviceTag}
                      └─── device
                      │       └─── count
