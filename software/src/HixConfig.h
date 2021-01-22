@@ -21,6 +21,7 @@ class HixConfig {
         bool          bOLEDEnabled;
         bool          bSelfTestEnabled;
         bool          bAutoBackgroundCalibrationEnabled;
+        int           nScaleCorrectionFactor;
         unsigned long crc;
     } data;
     //determine crc
@@ -33,7 +34,7 @@ class HixConfig {
     //getters
     int          getNumberOfBootUps(void);
     const char * getDeviceType(void) { return "HixCO2TemperatureIRBlaster"; };
-    const char * getDeviceVersion(void) { return "2.2.4"; };
+    const char * getDeviceVersion(void) { return "2.2.6"; };
     const char * getDeviceBuildTimestamp(void);
     const char * getMQTTServer(void);
     const char * getRoom(void);
@@ -43,6 +44,7 @@ class HixConfig {
     bool         getOLEDEnabled(void);
     bool         getSelfTestEnabled(void);
     bool         getAutoBackgroundCalibrationEnabled(void);
+    int          getScaleCorrectionFactor(void);
     //setters
     void setNumberOfBootUps(int bValue);
     void setMQTTServer(const char * szValue);
@@ -53,8 +55,10 @@ class HixConfig {
     void setOLEDEnabled(bool bValue);
     void setSelfTestEnabled(bool bValue);
     void setAutoBackgroundCalibrationEnabled(bool bValue);
+    void setScaleCorrectFactor(int nValue);
     //helpers
     void incrementNumberOfBootUps(void);
+    int  rescaleCO2Value(int nCO2);
     //save to eeprom
     void commitToEEPROM(void);
     //replaces placeholders in string with config values

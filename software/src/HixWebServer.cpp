@@ -94,6 +94,7 @@ bool HixWebServer::handlePostConfig(void) {
     if (hasArg("mqtt_server")) m_config.setMQTTServer(arg("mqtt_server").c_str());
     if (hasArg("room")) m_config.setRoom(arg("room").c_str());
     if (hasArg("device_tag")) m_config.setDeviceTag(arg("device_tag").c_str());
+    if (hasArg("scale_corr_factor")) m_config.setScaleCorrectFactor(arg("scale_corr_factor").toInt());
     m_config.setOTAEnabled(hasArg("ota_enabled"));
     m_config.setLEDEnabled(hasArg("led_enabled"));
     m_config.setOLEDEnabled(hasArg("oled_enabled"));
@@ -142,6 +143,7 @@ void HixWebServer::replacePlaceholdersMHZ19(String & contents) {
     //replace different parameters
     contents.replace("||MHZ19_FIRMWARE||", version);
     contents.replace("||MHZ19_CO2||", String(m_mhz19.getCO2()));
+    contents.replace("||MHZ19_CO2_CORR||", String(m_config.rescaleCO2Value(m_mhz19.getCO2())));    
     contents.replace("||MHZ19_TRANSMITTANCE||", String(m_mhz19.getTransmittance()));
     contents.replace("||MHZ19_TEMPERATURE||", String(m_mhz19.getTemperature()));
     contents.replace("||MHZ19_ACCURACY||", String(m_mhz19.getAccuracy()));

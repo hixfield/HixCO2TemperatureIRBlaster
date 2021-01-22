@@ -239,7 +239,7 @@ void loop() {
     if (g_sampler.isExpired(true)) {
         g_bLoopToggle = !g_bLoopToggle;
         // load CO2 and check error condition
-        int nTempCO2 = g_mhz19.getCO2();
+        int nTempCO2 = g_config.rescaleCO2Value(g_mhz19.getCO2());
         //only use the new value if there was no error
         if (g_mhz19.errorCode == RESULT_OK) {
             g_nCurrentCO2 = nTempCO2;

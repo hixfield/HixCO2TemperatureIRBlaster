@@ -56,6 +56,10 @@ bool HixConfig::getAutoBackgroundCalibrationEnabled(void) {
     return data.bAutoBackgroundCalibrationEnabled;
 }
 
+int HixConfig::getScaleCorrectionFactor(void) {
+    return data.nScaleCorrectionFactor;
+}
+
 void HixConfig::setNumberOfBootUps(int bValue) {
     data.nNumberOfBootUps = bValue;
 }
@@ -96,9 +100,18 @@ void HixConfig::setAutoBackgroundCalibrationEnabled(bool bValue) {
     data.bAutoBackgroundCalibrationEnabled = bValue;
 }
 
+void HixConfig::setScaleCorrectFactor(int dValue) {
+    data.nScaleCorrectionFactor = dValue;
+}
+
 void HixConfig::incrementNumberOfBootUps(void) {
     data.nNumberOfBootUps++;
     commitToEEPROM();
+}
+
+int HixConfig::rescaleCO2Value(int nCO2) {
+    int32_t nCorrected = ( (int32_t)nCO2 * (int32_t) getScaleCorrectionFactor() ) / (int32_t) 100;
+    return (int) nCorrected;
 }
 
 void HixConfig::commitToEEPROM(void) {
@@ -127,6 +140,7 @@ void HixConfig::commitDefaults(void) {
     setOLEDEnabled(true);
     setSelfTestEnabled(true);
     setAutoBackgroundCalibrationEnabled(false);
+    setScaleCorrectFactor(100);
     commitToEEPROM();
 }
 
@@ -142,6 +156,7 @@ void HixConfig::replacePlaceholders(String & contents) {
     contents.replace("||OLED_ENABLED||", getOLEDEnabled() ? "checked" : "");
     contents.replace("||SELFTEST_ENABLED||", getSelfTestEnabled() ? "checked" : "");
     contents.replace("||ABC_ENABLED||", getAutoBackgroundCalibrationEnabled() ? "checked" : "");
+    contents.replace("||SCALE_CORR_FACTOR||", String(getScaleCorrectionFactor()));
     contents.replace("||RESET_REASON||", ESP.getResetReason());
     contents.replace("||RESET_INFO||", ESP.getResetInfo());
     contents.replace("||FREE_HEAP||", String(ESP.getFreeHeap()));

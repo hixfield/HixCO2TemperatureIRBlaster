@@ -29,6 +29,10 @@
                 <td><input type="text" name="device_tag" value="||DEVICE_TAG||"></td>
             </tr>
             <tr>
+                <td>Scale correction factor % (100 = no correction)</td>
+                <td><input type="number" name="scale_corr_factor" step="1" value="||SCALE_CORR_FACTOR||"></td>
+            </tr>            
+            <tr>
                 <td>OTA enabled</td>
                 <td><input type="checkbox" name="ota_enabled" value="true" ||OTA_ENABLED||></td>
             </tr>
@@ -62,6 +66,10 @@
             <td width="200">Current CO2</td>
             <td>||MHZ19_CO2||</td>
         </tr>
+        <tr>
+            <td width="200"><i>Rescaled current CO2</i></td>
+            <td><i>||MHZ19_CO2_CORR||</i></td>
+        </tr>        
         <tr>
             <td width="200">Current transmittance</td>
             <td>||MHZ19_TRANSMITTANCE||</td>
