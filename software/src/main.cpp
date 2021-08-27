@@ -16,6 +16,7 @@
 HixConfig           g_config;
 HixTimeout          g_sampler(1000, true);
 HixTimeout          g_logger(5000, true);
+HixTimeout          g_noConnectionReset(5UL*60UL*1000UL);
 HixDisplay          g_display;
 HixPinDigitalOutput g_beeper(2);
 DS18B20Temperature  g_temperature(14);
@@ -275,6 +276,12 @@ void loop() {
     }
     if (g_logger.isExpired(true)) {
         g_mqtt.publishStatusValues(g_nCurrentCO2, g_fCurrentTemp);
+    }
+    if (g_mqtt.isConnected()) {
+        g_noConnectionReset.restart();
+    }
+    if (g_noConnectionReset.isExpired(true)) {
+        resetWithMessage("MQTT connection timeout: resetting!");
     }
 }
 
