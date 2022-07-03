@@ -6,7 +6,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <Arduino.h>
 #include <ArduinoOTA.h>
-#include <DS18B20Temperature.h>
+#include <HixDS18B20.h>
 #include <HixPinDigitalOutput.h>
 #include <HixTimeout.h>
 #include <MHZ19.h>
@@ -19,7 +19,7 @@ HixTimeout          g_logger(5000, true);
 HixTimeout          g_noConnectionReset(5UL*60UL*1000UL);
 HixDisplay          g_display;
 HixPinDigitalOutput g_beeper(2);
-DS18B20Temperature  g_temperature(14);
+HixDS18B20          g_temperature(14);
 Adafruit_NeoPixel   g_rgbLed = Adafruit_NeoPixel(1, 0, NEO_RGB + NEO_KHZ400);
 MHZ19               g_mhz19;
 SoftwareSerial      g_mhz19Serial(13, 16);
