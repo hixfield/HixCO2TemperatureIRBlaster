@@ -8,9 +8,9 @@
 
 class HixConfig {
   private:
-    //base address for epprom
+    // base address for epprom
     const int m_nEPPROMBaseAddress = 0;
-    //hilds the data
+    // hilds the data
     struct {
         int           nNumberOfBootUps;
         char          szMQTTServer[50];
@@ -24,17 +24,17 @@ class HixConfig {
         int           nScaleCorrectionFactor;
         unsigned long crc;
     } data;
-    //determine crc
+    // determine crc
     unsigned long calculateCRC(void);
-    //store defaults
+    // store defaults
     void commitDefaults(void);
 
   public:
     HixConfig();
-    //getters
+    // getters
     int          getNumberOfBootUps(void);
     const char * getDeviceType(void) { return "HixCO2TemperatureIRBlaster"; };
-    const char * getDeviceVersion(void) { return "2.2.9"; };
+    const char * getDeviceVersion(void) { return "2.3.0"; };
     const char * getDeviceBuildTimestamp(void);
     const char * getMQTTServer(void);
     const char * getRoom(void);
@@ -45,7 +45,7 @@ class HixConfig {
     bool         getSelfTestEnabled(void);
     bool         getAutoBackgroundCalibrationEnabled(void);
     int          getScaleCorrectionFactor(void);
-    //setters
+    // setters
     void setNumberOfBootUps(int bValue);
     void setMQTTServer(const char * szValue);
     void setRoom(const char * szValue);
@@ -56,12 +56,12 @@ class HixConfig {
     void setSelfTestEnabled(bool bValue);
     void setAutoBackgroundCalibrationEnabled(bool bValue);
     void setScaleCorrectFactor(int nValue);
-    //helpers
+    // helpers
     void incrementNumberOfBootUps(void);
     int  rescaleCO2Value(int nCO2);
-    //save to eeprom
+    // save to eeprom
     void commitToEEPROM(void);
-    //replaces placeholders in string with config values
+    // replaces placeholders in string with config values
     void replacePlaceholders(String & contents);
 };
 
