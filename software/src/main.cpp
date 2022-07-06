@@ -12,11 +12,11 @@
 #include <MHZ19.h>
 #include <SoftwareSerial.h>
 
-//connected devices and software modules
+// connected devices and software modules
 HixConfig           g_config;
 HixTimeout          g_sampler(1000, true);
 HixTimeout          g_logger(5000, true);
-HixTimeout          g_noConnectionReset(5UL*60UL*1000UL);
+HixTimeout          g_noConnectionReset(5UL * 60UL * 1000UL);
 HixDisplay          g_display;
 HixPinDigitalOutput g_beeper(2);
 HixDS18B20          g_temperature(14);
@@ -25,11 +25,11 @@ MHZ19               g_mhz19;
 SoftwareSerial      g_mhz19Serial(13, 16);
 HixWebServer        g_webServer(g_config, g_mhz19);
 
-//Not used in this firmware:
-//IRSamsungAc         g_IRTransmitter(15);
-//IRrecv g_IRReciever(12, 1024, 40, true);
+// Not used in this firmware:
+// IRSamsungAc         g_IRTransmitter(15);
+// IRrecv g_IRReciever(12, 1024, 40, true);
 
-//global variables
+// global variables
 float g_fCurrentTemp = 0;
 int   g_nCurrentCO2  = 0;
 int   g_nCurrentRSSI = 0;
@@ -68,7 +68,7 @@ void configureOTA() {
     Serial.println(g_mqtt.getMqttClientName());
     ArduinoOTA.setHostname(g_mqtt.getMqttClientName());
     ArduinoOTA.setPort(8266);
-    //setup handlers
+    // setup handlers
     ArduinoOTA.onStart([]() {
         Serial.println("OTA -> Start");
     });
@@ -95,15 +95,15 @@ void configureOTA() {
 }
 
 void setLedColor(Color color, u32_t nDimFactor = 16) {
-    //make base colors
+    // make base colors
     u32_t nR = color >> 16;
     u32_t nG = (color & 0x00FF00) >> 8;
     u32_t nB = color & 0x0000FF;
-    //take dimming into account
+    // take dimming into account
     nR /= nDimFactor;
     nG /= nDimFactor;
     nB /= nDimFactor;
-    //reassemble
+    // reassemble
     u32_t nDimmedColor = (nR << 16) | (nG << 8) | nB;
     g_rgbLed.setPixelColor(0, nDimmedColor);
     g_rgbLed.show();
@@ -143,10 +143,10 @@ void printInfoMhz() {
 
 void selfTest(void) {
     Serial.println(F("Running self test..."));
-    //display version while running the self test...
+    // display version while running the self test...
     Serial.println(F("Showing version on display"));
     g_display.drawDisplayVersion(g_config.getDeviceType(), g_config.getDeviceVersion());
-    //show colors on led
+    // show colors on led
     Serial.println(F("Showing green-red-oragne-blue-white on LED"));
     setLedColor(Color::green);
     delay(300);
@@ -157,12 +157,12 @@ void selfTest(void) {
     setLedColor(Color::blue);
     delay(300);
     setLedColor(Color::white);
-    //beep our led 5 times
+    // beep our led 5 times
     Serial.println(F("Beeping 5 times"));
     g_beeper.blink(true, 5, 100);
-    //extract info of the CO2 sensor
+    // extract info of the CO2 sensor
     printInfoMhz();
-    //all done
+    // all done
     Serial.println(F("Selftest complete"));
 }
 
@@ -172,19 +172,19 @@ void selfTest(void) {
 
 void setup() {
     Serial.begin(115200);
-    //start with a clean line
+    // start with a clean line
     Serial.println();
     Serial.println();
-    //display my version
+    // display my version
     Serial.print(F("Startup "));
     Serial.print(g_config.getDeviceType());
     Serial.print(F(" "));
     Serial.println(g_config.getDeviceVersion());
-    //increment our counter
+    // increment our counter
     g_config.incrementNumberOfBootUps();
     Serial.print(F("Number of bootups: "));
     Serial.println(g_config.getNumberOfBootUps());
-    //disconnect WiFi -> seams to help for bug that after upload wifi does not want to connect again...
+    // disconnect WiFi -> seams to help for bug that after upload wifi does not want to connect again...
     Serial.println(F("Disconnecting WIFI"));
     WiFi.disconnect();
     // setup display
@@ -192,15 +192,15 @@ void setup() {
     if (!g_display.begin()) resetWithMessage("SSD1306 allocation failed, resetting");
     g_display.clearDisplay();
     g_display.display();
-    //setup beeper
+    // setup beeper
     Serial.println(F("Setup beeper"));
     g_beeper.begin();
-    //setup DS18B20
+    // setup DS18B20
     Serial.println(F("Setup DS18B20"));
     if (!g_temperature.begin()) {
         resetWithMessage("Could not locate DS18B20");
     }
-    //setup RGB let
+    // setup RGB let
     Serial.println(F("Setup RDB LED"));
     g_rgbLed.begin();
     setLedColor(Color::black);
@@ -213,17 +213,17 @@ void setup() {
     // configure MQTT
     Serial.println(F("Setting up MQTT"));
     if (!g_mqtt.begin()) resetWithMessage("MQTT allocation failed, resetting");
-    //setup SPIFFS
+    // setup SPIFFS
     Serial.println(F("Setting up SPIFFS"));
     if (!SPIFFS.begin()) resetWithMessage("SPIFFS initialization failed, resetting");
-    //setup the server
+    // setup the server
     Serial.println(F("Setting up web server"));
     g_webServer.begin();
-    //run selftest if required
+    // run selftest if required
     if (g_config.getSelfTestEnabled()) {
         selfTest();
     }
-    //all done
+    // all done
     Serial.println(F("Setup complete"));
 }
 
@@ -232,33 +232,37 @@ void setup() {
 //////////////////////////////////////////////////////////////////////////////////
 
 void loop() {
-    //other loop functions
+    // other loop functions
     g_mqtt.loop();
     g_webServer.handleClient();
     ArduinoOTA.handle();
-    //my own processing
+    // my own processing
     if (g_sampler.isExpired(true)) {
         g_bLoopToggle = !g_bLoopToggle;
         // load CO2 and check error condition
         int nTempCO2 = g_config.rescaleCO2Value(g_mhz19.getCO2());
-        //only use the new value if there was no error
+        // only use the new value if there was no error
         if (g_mhz19.errorCode == RESULT_OK) {
             g_nCurrentCO2 = nTempCO2;
         }
-        //read other sensor values
+        // read other sensor values
         g_fCurrentTemp = g_temperature.getTemp();
         g_nCurrentRSSI = WiFi.RSSI();
-        //set led
+        // set led
         if (g_config.getLEDEnabeled()) {
-            if (g_mqtt.isConnected()) {
-                setLedColorForCO2(g_nCurrentCO2);
-            } else {
+            if (!g_mqtt.isWifiConnected()) {
                 setLedColor(Color::blue);
+            } else {
+                if (g_mqtt.isConnected()) {
+                    setLedColorForCO2(g_nCurrentCO2);
+                } else {
+                    setLedColor(Color::white);
+                }
             }
         } else {
             setLedColor(Color::black);
         }
-        //show on display
+        // show on display
         if (g_config.getOLEDEnabled()) {
             g_display.showStatus(g_fCurrentTemp,
                                  g_nCurrentCO2,
@@ -290,12 +294,12 @@ void loop() {
 //////////////////////////////////////////////////////////////////////////////////
 
 void onConnectionEstablished() {
-    //setup OTA
+    // setup OTA
     if (g_config.getOTAEnabled()) {
         configureOTA();
     } else {
         Serial.println("OTA is disabled");
     }
-    //plushing values
+    // plushing values
     g_mqtt.publishDeviceValues();
 }
